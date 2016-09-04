@@ -1,11 +1,16 @@
 class Prueba
   def initialize()
     Object.send(:define_method,:deberia) do
-    |args| puts self.instance_exec(args[1], &args[0])
+    |args| if(args.is_a? Array)
+             puts self.instance_exec(args[1], &args[0])
+           else
+             puts self == args
+           end
     end
     @mayor_a =  Proc.new do |valor|  self > valor end
     @menor_a = Proc.new do |valor| self < valor end
     @uno_de_estos = Proc.new do |valor| valor.include? self end
+    @merlusa = 1
   end
 
   def method_missing(symbol, *args)
@@ -15,12 +20,21 @@ class Prueba
     end
     if(symbol.to_s.start_with? 'tener_')
       atributo = symbol.to_s[6..-1]
+      if(args[0].is_a? Array)
 
+        return [Proc.new do |valor| self.send(atributo).instance_exec(args[0][1], &args[0][0]) end]
+      else
+        puts 'hola'
+        puts args[0]
+        return [Proc.new do |valor| self.send(atributo) == args[0] end]
+      end
+      #return [Proc.new do return end]
     end
   end
   def llamar
     7.deberia ser uno_de_estos [1,5,6,7]
     self.deberia ser_hola
+    self.deberia ser 7
   end
 
   def ser(bloq)
@@ -38,6 +52,15 @@ class Prueba
   def hola?
     true
   end
+  def merlusa
+    return @merlusa
+  end
+  def prueba
+    self.deberia tener_merlusa mayor_a 2
+  end
 end
 
-Prueba.new.llamar
+puts Prueba.new.prueba
+
+
+
