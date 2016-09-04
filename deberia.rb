@@ -19,14 +19,11 @@ class Prueba
       return [Proc.new do |valor| self.send(metodo) end]
     end
     if(symbol.to_s.start_with? 'tener_')
-      atributo = symbol.to_s[6..-1]
+      atributo = '@' + symbol.to_s[6..-1]
       if(args[0].is_a? Array)
-
-        return [Proc.new do |valor| self.send(atributo).instance_exec(args[0][1], &args[0][0]) end]
+        return [Proc.new do |valor| self.instance_variable_get(atributo).instance_exec(args[0][1], &args[0][0]) end]
       else
-        puts 'hola'
-        puts args[0]
-        return [Proc.new do |valor| self.send(atributo) == args[0] end]
+        return [Proc.new do |valor| self.instance_variable_get(atributo) == args[0] end]
       end
       #return [Proc.new do return end]
     end
@@ -52,11 +49,8 @@ class Prueba
   def hola?
     true
   end
-  def merlusa
-    return @merlusa
-  end
   def prueba
-    self.deberia tener_merlusa mayor_a 2
+    self.deberia tener_merlusa 2
   end
 end
 
