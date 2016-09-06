@@ -31,20 +31,20 @@ class TADsPec
     end
   end
 
-  def self.agregar_metodos_suites clase
-    clase.send(:define_method,:mayor_a) do |valor|
+  def self.agregar_metodos_suites instancia
+  instancia.singleton_class.send(:define_method,:mayor_a) do |valor|
       return [@@mayor_a , valor]
     end
-    clase.send(:define_method,:menor_a) do |valor|
+  instancia.singleton_class.send(:define_method,:menor_a) do |valor|
       return [@@menor_a, valor]
     end
-    clase.send(:define_method,:uno_de_estos) do |valor|
+  instancia.singleton_class.send(:define_method,:uno_de_estos) do |valor|
       return [@@uno_de_estos, valor]
     end
-    clase.send(:define_method,:ser) do |valor|
+  instancia.singleton_class.send(:define_method,:ser) do |valor|
       return valor
     end
-    clase.send(:define_method,:method_missing) do |symbol,*args|
+  instancia.singleton_class.send(:define_method,:method_missing) do |symbol,*args|
       if(symbol.to_s.start_with? 'ser_')
         metodo = symbol.to_s[4..-1] +'?'
         return [Proc.new do self.send(metodo) end]
@@ -62,8 +62,9 @@ class TADsPec
     end
   end
 
-  def self.testear_metodo clase , metodo
+    def self.testear_metodo clase , metodo
     instancia = clase.new
+    self.agregar_metodos_suites instancia
     @@resultadoMetodo = ResultadoTest.new
     instancia.send(metodo)
     @@resultados_asserts = @@resultados_asserts+[@@resultadoMetodo]
@@ -80,7 +81,7 @@ class TADsPec
 
   def self.ejecutar_test_suit claseATestear
     instancia = claseATestear.new
-    TADsPec.agregar_metodos_suites claseATestear
+    TADsPec.agregar_metodos_suites instancia
     metodos = instancia.methods
     metodos = metodos.select {|metodo| TADsPec.is_test? metodo}
     metodos.each {|metodo|
@@ -95,14 +96,6 @@ class TADsPec
     return metodos
   end
 
-  def self.quitar_metodos clase
-    clase.send(:remove_method, :mayor_a)
-    clase.send(:remove_method, :menor_a)
-    clase.send(:remove_method, :uno_de_estos)
-    clase.send(:remove_method, :ser)
-    clase.send(:remove_method, :mayor_a)
-  end
-
   def self.testear *args
       self.agregar_deberia
       if(args[0] == nil)
@@ -110,14 +103,12 @@ class TADsPec
       elsif((TADsPec.is_suite? args[0]) && args[1] == nil)
         self.ejecutar_test_suit args[0]
       elsif((TADsPec.is_suite? args[0]) && args[1] != nil)
-        self.agregar_metodos_suites args[0]
         metodos = TADsPec.transformar_metodos_testear args[1..-1]
         metodos.each{|metodo| TADsPec.testear_metodo args[0], metodo}
       end
       Object.send(:remove_method,:deberia)
     return
   end
-
 end
 
 
