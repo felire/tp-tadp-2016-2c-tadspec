@@ -1,37 +1,37 @@
 class TADsPec
 
-    @@resultadosAsserts = []
+    @@resultados_asserts = []
     @@mayor_a =  Proc.new do |valor|  self > valor end
     @@menor_a = Proc.new do |valor| self < valor end
     @@uno_de_estos = Proc.new do |valor| valor.include? self end
 
-  def self.is_Suite? clase
-    clase.instance_methods.any?{|me| is_Test? me}
+  def self.is_suite? clase
+    clase.instance_methods.any?{|me| is_test? me}
   end
 
-  def self.is_Test? metodo
+  def self.is_test? metodo
     metodo.to_s.start_with?'testear_que_'
   end
 
-  def self.imprimirMierda
-     @@resultadosAsserts.each { |a| a.imprimirMierdita}
+  def self.imprimir_mierda
+     @@resultados_asserts.each { |a| a.imprimir_mierdita}
   end
 
-  def self.agregarAsercionActual booleano
+  def self.agregar_asercion_actual booleano
     @@resultadoMetodo.add booleano
   end
 
-  def self.agregarDeberia
+  def self.agregar_deberia
     Object.send(:define_method,:deberia) do
     |args| if(args.is_a? Array)
-             TADsPec.agregarAsercionActual self.instance_exec(args[1], &args[0])
+             TADsPec.agregar_asercion_actual self.instance_exec(args[1], &args[0])
            else
-             TADsPec.agregarAsercionActual self == args
+             TADsPec.agregar_asercion_actual self == args
            end
     end
   end
 
-  def self.agregarMetodosSuites clase
+  def self.agregar_metodos_suites clase
     clase.send(:define_method,:mayor_a) do |valor|
       return [@@mayor_a , valor]
     end
@@ -56,38 +56,36 @@ class TADsPec
         else
           return [Proc.new do self.instance_variable_get(atributo) == args[0] end]
         end
-        #return [Proc.new do return end]
       else
         super(symbol, *args)
       end
     end
   end
 
-  def self.testearMetodo clase , metodo
+  def self.testear_metodo clase , metodo
     instancia = clase.new
     @@resultadoMetodo = ResultadoTest.new
     instancia.send(metodo)
-    @@resultadosAsserts = @@resultadosAsserts+[@@resultadoMetodo]
+    @@resultados_asserts = @@resultados_asserts+[@@resultadoMetodo]
   end
 
-  def self.obtenerListaSuits
+  def self.obtener_lista_suits
     clases = []
     ObjectSpace.each_object(Class).each do
     |valor| clases = clases + [valor]
     end
-    listaSuits = clases.select {|clase| TADsPec.is_Suite? clase}
-    puts listaSuits
+    listaSuits = clases.select {|clase| TADsPec.is_suite? clase}
     return listaSuits
   end
 
-  def self.ejecutarTestSuit claseTestear
-    instancia = claseTestear.new
-    TADsPec.agregarMetodosSuites claseTestear
+  def self.ejecutar_test_suit claseATestear
+    instancia = claseATestear.new
+    TADsPec.agregar_metodos_suites claseATestear
     metodos = instancia.methods
-    metodos = metodos.select {|metodo| TADsPec.is_Test? metodo}
+    metodos = metodos.select {|metodo| TADsPec.is_test? metodo}
     metodos.each {|metodo|
     @@resultadoMetodo = ResultadoTest.new
-    @@resultadosAsserts = @@resultadosAsserts+[@@resultadoMetodo]
+    @@resultados_asserts = @@resultados_asserts+[@@resultadoMetodo]
     instancia.send(metodo)}
   end
 
@@ -97,19 +95,26 @@ class TADsPec
     return metodos
   end
 
-  def self.testear *args
-      self.agregarDeberia
-      if(args[0] == nil)
-        TADsPec.obtenerListaSuits.each {|suit| TADsPec.ejecutarTestSuit suit}
-      elsif((TADsPec.is_Suite? args[0]) && args[1] == nil)
-        self.ejecutarTestSuit args[0]
-      elsif((TADsPec.is_Suite? args[0]) && args[1] != nil)
-        self.agregarMetodosSuites args[0]
-        metodos = TADsPec.transformar_metodos_testear args[1..-1]
-        metodos.each{|metodo| TADsPec.testearMetodo args[0], metodo}
-      end
+  def self.quitar_metodos clase
+    clase.send(:remove_method, :mayor_a)
+    clase.send(:remove_method, :menor_a)
+    clase.send(:remove_method, :uno_de_estos)
+    clase.send(:remove_method, :ser)
+    clase.send(:remove_method, :mayor_a)
+  end
 
-    #object.remove_method(:deberia)
+  def self.testear *args
+      self.agregar_deberia
+      if(args[0] == nil)
+        TADsPec.obtener_lista_suits.each {|suit| TADsPec.ejecutar_test_suit suit}
+      elsif((TADsPec.is_suite? args[0]) && args[1] == nil)
+        self.ejecutar_test_suit args[0]
+      elsif((TADsPec.is_suite? args[0]) && args[1] != nil)
+        self.agregar_metodos_suites args[0]
+        metodos = TADsPec.transformar_metodos_testear args[1..-1]
+        metodos.each{|metodo| TADsPec.testear_metodo args[0], metodo}
+      end
+      Object.send(:remove_method,:deberia)
     return
   end
 
@@ -141,7 +146,7 @@ class ResultadoTest #Resultado de un metodo test
     @resultados = @resultados+[resultadoAssert]
   end
 
-  def imprimirMierdita
+  def imprimir_mierdita
     @resultados.each{ |a| puts a}
   end
 end
