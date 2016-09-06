@@ -1,10 +1,92 @@
+class ResultadoAssert
+  @descripcion
+  @resultado # 1 paso, 2 fallo, 3 exploto
+  @excepcion # es nil a menos que el resultado sea 3
+  def set_descripcion desc
+    @descripcion = desc
+  end
+  def set_resultado resultado
+    @resultado = resultado
+  end
+  def get_resultado
+    @resultado
+  end
+  def get_descripcion
+    @descripcion
+  end
+  def mostrar
+    puts @descripcion
+  end
+end
+
+
 class TADsPec
 
     @@resultados_asserts = []
-    @@mayor_a =  Proc.new do |valor|  self > valor end
-    @@menor_a = Proc.new do |valor| self < valor end
-    @@uno_de_estos = Proc.new do |valor| valor.include? self end
+    @@uno_de_estos = Proc.new do |valor|
+      resultado= ResultadoAssert.new
+      if(valor.include? self)
+        resultado.set_descripcion 'El resultado fue el esperado: '+ self.to_s + ' esta en la lista'
+        resultado.set_resultado 1
+      else
+        resultado.set_descripcion 'FALLO: '+ self.to_s + ' no se encuentra en la lista'
+        resultado.set_resultado 2
+      end
+      resultado
+    end
 
+    @@ser = Proc.new do |valor|
+      resultado=ResultadoAssert.new
+      if(self == valor)
+        resultado.set_descripcion 'El resultado fue el esperado'
+        resultado.set_resultado 1
+      else
+        resultado.set_descripcion 'El resultado no fue el esperado'
+        resultado.set_resultado 2
+      end
+      resultado
+    end
+    @@mayor_a =  Proc.new do |valor|
+      resultado = ResultadoAssert.new
+      if(self > valor)
+        resultado.set_descripcion 'El resultado fue el esperado: ' + self.to_s + '>' + valor.to_s
+        resultado.set_resultado 1
+      elsif(self < valor)
+        resultado.set_descripcion 'FALLO: ' + self.to_s + '<' + valor.to_s + ' y se esperaba que: ' + self.to_s +  '>' +  valor.to_s
+        resultado.set_resultado 2
+      elsif(self == valor)
+        resultado.set_descripcion 'FALLO: ' + self.to_s + '==' + valor.to_s + ' y se esperaba que: ' + self.to_s +  '>' +  valor.to_s
+        resultado.set_resultado 2
+      end
+      resultado
+    end
+
+    @@menor_a = Proc.new do |valor|
+      resultado = ResultadoAssert.new
+      if(self < valor)
+        resultado.set_descripcion 'El resultado fue el esperado: ' + self.to_s + ' < ' + valor.to_s
+        resultado.set_resultado 1
+      elsif(self > valor)
+        resultado.set_descripcion 'FALLO: ' + self.to_s + ' > ' + valor.to_s + ' y se esperaba que: ' + self.to_s +  ' < ' +  valor.to_s
+        resultado.set_resultado 2
+      elsif(self == valor)
+        resultado.set_descripcion 'FALLO: ' + self.to_s + ' == ' + valor.to_s + ' y se esperaba que: ' + self.to_s +  ' < ' +  valor.to_s
+        resultado.set_resultado 2
+      end
+      resultado
+    end
+
+    @@entender = Proc.new do |mensaje|
+      resultado = ResultadoAssert.new
+      if(self.respond_to? mensaje)
+        resultado.set_descripcion 'El resultado fue el esperado: ' + self.to_s + ' entiende el metodo :' + mensaje.to_s
+        resultado.set_resultado 1
+      else
+        resultado.set_descripcion 'FALLO: ' + self.to_s + ' no entiende el metodo :' + mensaje.to_s
+        resultado.set_resultado 2
+      end
+      resultado
+    end
   def self.is_suite? clase
     clase.instance_methods.any?{|me| is_test? me}
   end
@@ -23,11 +105,8 @@ class TADsPec
 
   def self.agregar_deberia
     Object.send(:define_method,:deberia) do
-    |args| if(args.is_a? Array)
+    |args|
              TADsPec.agregar_asercion_actual self.instance_exec(args[1], &args[0])
-           else
-             TADsPec.agregar_asercion_actual self == args
-           end
     end
   end
 
@@ -42,8 +121,16 @@ class TADsPec
       return [@@uno_de_estos, valor]
     end
   instancia.singleton_class.send(:define_method,:ser) do |valor|
-      return valor
-    end
+      if (!valor.is_a? Array)
+        return [@@ser, valor]
+      else
+        return valor
+      end
+  end
+
+  instancia.singleton_class.send(:define_method, :entender) do |mensaje|
+    return [@@entender, mensaje]
+  end
   instancia.singleton_class.send(:define_method,:method_missing) do |symbol,*args|
       if(symbol.to_s.start_with? 'ser_')
         metodo = symbol.to_s[4..-1] +'?'
@@ -138,7 +225,7 @@ class ResultadoTest #Resultado de un metodo test
   end
 
   def imprimir_mierdita
-    @resultados.each{ |a| puts a}
+    @resultados.each{ |a| a.mostrar}
   end
 end
 
@@ -168,6 +255,7 @@ class Suite2
     7.deberia ser 8
     7.deberia ser mayor_a 2
     7.deberia ser mayor_a 8
+    Object.deberia entender :new
   end
 
 end
