@@ -24,9 +24,9 @@ class TADsPec
   def self.agregarDeberia
     Object.send(:define_method,:deberia) do
     |args| if(args.is_a? Array)
-             self.agregarAsercionActual self.instance_exec(args[1], &args[0])
+             TADsPec.agregarAsercionActual self.instance_exec(args[1], &args[0])
            else
-             self.agregarAsercionActual self == args
+             TADsPec.agregarAsercionActual self == args
            end
     end
   end
@@ -75,14 +75,14 @@ class TADsPec
     ObjectSpace.each_object(Class).each do
     |valor| clases = clases + [valor]
     end
-    puts clases
     listaSuits = clases.select {|clase| TADsPec.is_Suite? clase}
+    puts listaSuits
     return listaSuits
   end
 
   def self.ejecutarTestSuit claseTestear
     instancia = claseTestear.new
-    self.agregarMetodosSuites claseTestear
+    TADsPec.agregarMetodosSuites claseTestear
     metodos = instancia.methods
     metodos = metodos.select {|metodo| TADsPec.is_Test? metodo}
     metodos.each {|metodo|
@@ -101,16 +101,16 @@ class TADsPec
       self.agregarDeberia
       if(args[0] == nil)
         TADsPec.obtenerListaSuits.each {|suit| TADsPec.ejecutarTestSuit suit}
-      end
-      if((TADsPec.is_Suite? args[0]) && args[1] == nil)
+      elsif((TADsPec.is_Suite? args[0]) && args[1] == nil)
         self.ejecutarTestSuit args[0]
-      end
-      if((TADsPec.is_Suite? args[0]) && args[1] != nil)
+      elsif((TADsPec.is_Suite? args[0]) && args[1] != nil)
         self.agregarMetodosSuites args[0]
         metodos = TADsPec.transformar_metodos_testear args[1..-1]
         metodos.each{|metodo| TADsPec.testearMetodo args[0], metodo}
       end
+
     #object.remove_method(:deberia)
+    return
   end
 
 end
@@ -146,9 +146,6 @@ class ResultadoTest #Resultado de un metodo test
   end
 end
 
-class  Hla
-  @atributin = 1
-end
 
 class Suite
   def testear_que_es_7
@@ -161,21 +158,21 @@ class Suite
     7.deberia ser mayor_a 8
   end
 
-  class Suite2
-    def testear_que_merlusa
-    7.deberia tener_merlusa 2
-    end
-    def testear_que_atributo
-      Hla.new.deberia tener_atributin 1
-    end
-  end
-  class Suite3
-    def testear_que_merlusa123
-      7.deberia tener_merlusa 2
-    end
-  end
   def self.testeame
     TADsPec.testear Suite , :testear_que_es_7
   end
+end
+
+class Suite2
+  def testear_que_es_7
+    7.deberia ser 7
+  end
+
+  def testear_que_hola
+    7.deberia ser 8
+    7.deberia ser mayor_a 2
+    7.deberia ser mayor_a 8
+  end
+
 end
 
