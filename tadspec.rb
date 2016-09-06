@@ -1,11 +1,9 @@
 class TADsPec
-  attr_accessor :resultadoActual, :resultados
-
     @@resultados = []
-    @@resultadoActual
     @@mayor_a =  Proc.new do |valor|  self > valor end
     @@menor_a = Proc.new do |valor| self < valor end
     @@uno_de_estos = Proc.new do |valor| valor.include? self end
+
 
   def self.is_Suite? clase
     clase.instance_methods.any?{|me| is_Test? me}
@@ -14,7 +12,7 @@ class TADsPec
     metodo.to_s.start_with?'testear_que_'
   end
   def self.imprimirMierda
-    puts @@resultados.each { |a| a.imprimirMierdita}
+     @@resultados.each { |a| a.imprimirMierdita}
   end
   def self.agregarAsercionActual booleano
     @@resultadoActual.add booleano
@@ -62,7 +60,7 @@ class TADsPec
   def self.testear clase , metodo
     instancia = clase.new
     @@resultadoActual = ResultadoTest.new
-    @@resultados+[@@resultadoActual]
+    @@resultados = @@resultados+[@@resultadoActual]
     self.agregarDeberia
     self.agregarMetodosSuites clase
     instancia.send(metodo)
@@ -87,7 +85,7 @@ class ResultadoTest #Resultado de un metodo test
     @desc_error
   end
   def add resultadoAssert
-    @resultados+[resultadoAssert]
+    @resultados = @resultados+[resultadoAssert]
   end
   def imprimirMierdita
     @resultados.each{ |a| puts a}
@@ -119,3 +117,4 @@ class Suite
     TADsPec.testear Suite , :testear_que_es_7
   end
 end
+
