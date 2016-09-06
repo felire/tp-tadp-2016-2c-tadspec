@@ -24,9 +24,9 @@ class TADsPec
   def self.agregarDeberia
     Object.send(:define_method,:deberia) do
     |args| if(args.is_a? Array)
-             TADsPec.agregarAsercionActual self.instance_exec(args[1], &args[0])
+             self.agregarAsercionActual self.instance_exec(args[1], &args[0])
            else
-             TADsPec.agregarAsercionActual self == args
+             self.agregarAsercionActual self == args
            end
     end
   end
@@ -66,8 +66,8 @@ class TADsPec
   def self.testearMetodo clase , metodo
     instancia = clase.new
     @@resultadoMetodo = ResultadoTest.new
-    @@resultadosAsserts = @@resultadosAsserts+[@@resultadoMetodo]
     instancia.send(metodo)
+    @@resultadosAsserts = @@resultadosAsserts+[@@resultadoMetodo]
   end
 
   def self.obtenerListaSuits
@@ -75,6 +75,7 @@ class TADsPec
     ObjectSpace.each_object(Class).each do
     |valor| clases = clases + [valor]
     end
+    puts clases
     listaSuits = clases.select {|clase| TADsPec.is_Suite? clase}
     return listaSuits
   end
@@ -82,7 +83,7 @@ class TADsPec
   def self.ejecutarTestSuit claseTestear
     instancia = claseTestear.new
     self.agregarMetodosSuites claseTestear
-    metodos = instancia.methods(false)
+    metodos = instancia.methods
     metodos = metodos.select {|metodo| TADsPec.is_Test? metodo}
     metodos.each {|metodo|
     @@resultadoMetodo = ResultadoTest.new
@@ -92,7 +93,7 @@ class TADsPec
 
   def self.transformar_metodos_testear args
     metodos = []
-    args.each {|metodo| metodos = metodos + ['testear_que' + metodo.to_s]}
+    args.each {|metodo| metodos = metodos + ['testear_que_' + metodo.to_s]}
     return metodos
   end
 
@@ -101,16 +102,15 @@ class TADsPec
       if(args[0] == nil)
         TADsPec.obtenerListaSuits.each {|suit| TADsPec.ejecutarTestSuit suit}
       end
-      if(TADsPec.is_Suite? args[0] && args[1] == nil)
-        TADsPec.ejecutarTestSuit args[0]
+      if((TADsPec.is_Suite? args[0]) && args[1] == nil)
+        self.ejecutarTestSuit args[0]
       end
-      if(TADsPec.is_Suite? args[0] && args[1] != nil)
+      if((TADsPec.is_Suite? args[0]) && args[1] != nil)
         self.agregarMetodosSuites args[0]
         metodos = TADsPec.transformar_metodos_testear args[1..-1]
         metodos.each{|metodo| TADsPec.testearMetodo args[0], metodo}
       end
-    #self.sacarDeberia
-    Object.remove_method(:deberia)
+    #object.remove_method(:deberia)
   end
 
 end
@@ -146,25 +146,34 @@ class ResultadoTest #Resultado de un metodo test
   end
 end
 
-
-class Pepe
-  def testear_que_asdas
-    puts"bien"
-  end
+class  Hla
+  @atributin = 1
 end
-
 
 class Suite
   def testear_que_es_7
     7.deberia ser 7
   end
 
-  def hola
+  def testear_que_hola
     7.deberia ser 8
     7.deberia ser mayor_a 2
     7.deberia ser mayor_a 8
   end
 
+  class Suite2
+    def testear_que_merlusa
+    7.deberia tener_merlusa 2
+    end
+    def testear_que_atributo
+      Hla.new.deberia tener_atributin 1
+    end
+  end
+  class Suite3
+    def testear_que_merlusa123
+      7.deberia tener_merlusa 2
+    end
+  end
   def self.testeame
     TADsPec.testear Suite , :testear_que_es_7
   end
