@@ -16,6 +16,17 @@ class ResultadoAssert
   end
   def mostrar
     puts @descripcion
+    puts ' '
+  end
+
+  def paso?
+    @resultado == 1
+  end
+  def fallo?
+    @resultado == 2
+  end
+  def exploto?
+    @resultado == 3
   end
 end
 
@@ -28,7 +39,7 @@ class TADsPec
         resultado.set_descripcion 'El resultado fue el esperado: '+ self.to_s + ' esta en la lista'
         resultado.set_resultado 1
       else
-        resultado.set_descripcion 'FALLO: '+ self.to_s + ' no se encuentra en la lista'
+        resultado.set_descripcion 'FALLO: '+ self.to_s + ' no se encuentra en la lista: '+ valor.to_s
         resultado.set_resultado 2
       end
       resultado
@@ -40,7 +51,7 @@ class TADsPec
         resultado.set_descripcion 'El resultado fue el esperado'
         resultado.set_resultado 1
       else
-        resultado.set_descripcion 'El resultado no fue el esperado'
+        resultado.set_descripcion 'FALLO: '+self.to_s + ' no es '+ valor.to_s
         resultado.set_resultado 2
       end
       resultado
@@ -52,7 +63,7 @@ class TADsPec
       resultado.set_descripcion 'El resultado fue el esperado'
       resultado.set_resultado 1
       else
-      resultado.set_descripcion 'El resultado no fue el esperado'
+      resultado.set_descripcion 'FALLO: El metodo: '+metodo.to_s+' devuelve false'
       resultado.set_resultado 2
       end
       resultado
@@ -61,11 +72,11 @@ class TADsPec
     @@tener_ = Proc.new do |args|
     resultado = ResultadoAssert.new
       if(args[1].is_a? Array)
-        if(self.instance_variable_get(args[0]).instance_exec(args[1][1], &args[1][0]))
+        if(self.instance_variable_get(args[0]).instance_exec(args[1][1], &args[1][0]).paso?)
           resultado.set_descripcion 'El resultado fue el esperado'
           resultado.set_resultado 1
         else
-          resultado.set_descripcion 'El resultado no fue el esperado'
+          resultado.set_descripcion 'FALLO: La variable: '+ self.instance_variable_get(args[0]).to_s + ' no cumplio la condicion esperada'
           resultado.set_resultado 2
         end
       else
@@ -73,7 +84,7 @@ class TADsPec
           resultado.set_descripcion 'El resultado fue el esperado'
           resultado.set_resultado 1
         else
-          resultado.set_descripcion 'El resultado no fue el esperado'
+          resultado.set_descripcion 'FALLO: La variable ' + self.instance_variable_get(args[0]).to_s + ' no es '+args[1].to_s
           resultado.set_resultado 2
         end
       end
@@ -133,6 +144,34 @@ class TADsPec
      @@resultados_asserts.each { |a| a.imprimir_mierdita}
   end
 
+  def self.mostrar_resultado
+    cantidadCorridos = @@resultados_asserts.length
+    pasados = @@resultados_asserts.select {|test| test.paso_test?}
+    cantidadPasados= pasados.length
+    fallados = @@resultados_asserts.select{|test| test.fallo_test?}
+    cantidadFallados = fallados.length
+    explotados = @@resultados_asserts.select{|test| test.exploto_test?}
+    cantidadExplotados = explotados.length
+    puts 'Se corrieron '+ cantidadCorridos.to_s+ ' tests:'
+    puts 'Pasados: '+cantidadPasados.to_s
+    puts 'Fallados: '+cantidadFallados.to_s
+    puts 'Explotados: '+cantidadExplotados.to_s
+    puts ' '
+    puts 'Test Pasados con exito: '
+    pasados.each{|test| puts 'Nombre: '+ test.get_nombre_test.to_s}
+    puts ' '
+    puts 'Test Fallidos: '
+    fallados.each{|test|
+      puts 'Nombre: ' + test.get_nombre_test.to_s
+      puts ''
+      puts 'Descripcion falla: '
+      puts ' '
+      test.mensaje_fallo
+    }
+    return
+
+  end
+
   def self.agregar_asercion_actual booleano
     @@resultadoMetodo.add booleano
   end
@@ -188,6 +227,7 @@ class TADsPec
     instancia = clase.new
     self.agregar_metodos_suites instancia
     @@resultadoMetodo = ResultadoTest.new
+    @@resultadoMetodo.set_nombre_test metodo
     instancia.send(metodo)
     @@resultados_asserts = @@resultados_asserts+[@@resultadoMetodo]
   end
@@ -208,6 +248,7 @@ class TADsPec
     metodos = metodos.select {|metodo| TADsPec.is_test? metodo}
     metodos.each {|metodo|
     @@resultadoMetodo = ResultadoTest.new
+    @@resultadoMetodo.set_nombre_test metodo
     instancia.send(metodo)
     @@resultados_asserts = @@resultados_asserts+[@@resultadoMetodo] }
   end
@@ -229,7 +270,9 @@ class TADsPec
         metodos.each{|metodo| TADsPec.testear_metodo args[0], metodo}
       end
       Object.send(:remove_method,:deberia)
-    return
+      TADsPec.mostrar_resultado
+      @@resultados_asserts = []
+      return
   end
 
 end
@@ -247,7 +290,12 @@ class ResultadoTest #Resultado de un metodo test
   def set_nombre_test nombre
     @nombreTest = nombre
   end
-
+  def get_nombre_suit
+    @nombreSuit
+  end
+  def set_nombre_suit nombre
+    @nombreSuit = nombre
+  end
   def resultado_final?   #Devuelve el resultado final del test
     @resultados.all? {|resultado| resultado}
   end
@@ -260,6 +308,24 @@ class ResultadoTest #Resultado de un metodo test
     @resultados = @resultados+[resultadoAssert]
   end
 
+  def paso_test?
+    @resultados.all? {|resultadoAssert| resultadoAssert.paso?}
+  end
+
+  def fallo_test?
+    @resultados.any? {|resultadoAssert| resultadoAssert.fallo?} && @resultados.all? {|resultadoAssert| !resultadoAssert.exploto?}
+  end
+
+  def exploto_test?
+    @resultados.any?{|resultadoAssert| resultadoAssert.exploto?}
+  end
+
+  def assert_fallidos
+    @resultados.select{|assert| assert.fallo?}
+  end
+  def mensaje_fallo
+    self.assert_fallidos.each{|assert| assert.mostrar}
+  end
   def imprimir_mierdita
     @resultados.each{ |a| a.mostrar}
   end
@@ -327,6 +393,7 @@ class SuitPi
 
   @leandro.deberia tener_edad 22 # pasa
 
+  @leandro.deberia tener_edad 23
   #leandro.deberia tener_nombre "leandro" # falla: no hay atributo nombre
 
   @leandro.deberia tener_nombre nil # pasa
@@ -335,8 +402,12 @@ class SuitPi
 
   @leandro.deberia tener_edad menor_a 25 # pasa
 
-  @leandro.deberia tener_edad uno_de_estos [7, 22, "hola"] # pasa
+  @leandro.deberia tener_edad mayor_a 23
+  @leandro.deberia tener_edad uno_de_estos [7, 2, "hola"] # pasa
   #@leandro.deberia ser_joven # explota: Leandro no entiende el mensaje joven?
+  end
+  def testear_que_tener
+    @leandro.deberia tener_edad mayor_a 23
   end
 end
 
