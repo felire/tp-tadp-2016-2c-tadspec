@@ -413,5 +413,8 @@ class SuitPi
     @leandro.deberia tener_lista [1,2,3,4]
     @leandro.deberia tener_lista uno_de_estos [[1,2,3]]
   end
+  def testear_que_funca8
+    7.deberia ser mayor_a 7
+  end
 end
 
