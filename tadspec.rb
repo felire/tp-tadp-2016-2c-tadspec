@@ -194,7 +194,7 @@ class TADsPec
       return [@@uno_de_estos, valor]
     end
   instancia.singleton_class.send(:define_method,:ser) do |valor|
-      if (!valor.is_a? Array)
+      if ((!valor.is_a? Array)  || (!valor[0].respond_to? :call))
         return [@@ser, valor]
       else
         return valor
@@ -204,6 +204,7 @@ class TADsPec
   instancia.singleton_class.send(:define_method, :entender) do |mensaje|
     return [@@entender, mensaje]
   end
+
   instancia.singleton_class.send(:define_method,:method_missing) do |symbol,*args|
       if(symbol.to_s.start_with? 'ser_')
         metodo = symbol.to_s[4..-1] +'?'
@@ -212,11 +213,6 @@ class TADsPec
       if(symbol.to_s.start_with? 'tener_')
         atributo = '@' + symbol.to_s[6..-1]
         return [@@tener_, [atributo, args[0]]]
-        #if(args[0].is_a? Array)
-        #  return [Proc.new do self.instance_variable_get(atributo).instance_exec(args[0][1], &args[0][0]) end]
-        #else
-        #  return [Proc.new do self.instance_variable_get(atributo) == args[0] end]
-        #end
       else
         super(symbol, *args)
       end
@@ -338,15 +334,17 @@ class Suite
   end
 
   def testear_que_hola
-    7.deberia ser 8
+    #7.deberia ser 8
     7.deberia ser mayor_a 2
-    7.deberia ser mayor_a 8
+    #7.deberia ser mayor_a 8
   end
 end
 
 class Suite2
   def testear_que_es_8
-    7.deberia ser 8
+    7.deberia ser 7
+    [1,2].deberia ser [1,2]
+    [1,true, false, 1].deberia ser [1,true, false, 1]
   end
 
   def testear_que_hola
@@ -389,21 +387,15 @@ class SuitPi
 
   def testear_que_holis
   @nico.deberia ser_viejo    # pasa: Nico tiene edad 30. #@nico.viejo?.deberia ser true # La linea de arriba es equivalente a esta
-  @leandro.deberia ser_viejo # falla: Leandro tiene 22.
-
+  #@leandro.deberia ser_viejo # falla: Leandro tiene 22.
   @leandro.deberia tener_edad 22 # pasa
-
-  @leandro.deberia tener_edad 23
-  #leandro.deberia tener_nombre "leandro" # falla: no hay atributo nombre
-
+  #@leandro.deberia tener_edad 23
+  #@leandro.deberia tener_nombre "leandro"                                          #Santi: esto dice la variable no es leandro, deberia decir no existe la var edad
   @leandro.deberia tener_nombre nil # pasa
-
   @leandro.deberia tener_edad mayor_a 20 # pasa
-
   @leandro.deberia tener_edad menor_a 25 # pasa
-
-  @leandro.deberia tener_edad mayor_a 23
-  @leandro.deberia tener_edad uno_de_estos [7, 2, "hola"] # pasa
+  #@leandro.deberia tener_edad mayor_a 23
+  @leandro.deberia tener_edad uno_de_estos [7, 22, "hola"] # pasa
   #@leandro.deberia ser_joven # explota: Leandro no entiende el mensaje joven?
   end
   def testear_que_tener
