@@ -181,7 +181,7 @@ class TADsPec
   end
 
   def self.agregar_deberia
-    Object.send(:define_method,:deberia) do
+    BasicObject.send(:define_method,:deberia) do
     |args|
              TADsPec.agregar_asercion_actual self.instance_exec(args[1], &args[0])
     end
@@ -238,6 +238,7 @@ class TADsPec
     |valor| clases = clases + [valor]
     end
     listaSuits = clases.select {|clase| TADsPec.is_suite? clase}
+    listaSuits = listaSuits.select {|clase| !(clase.respond_to? :new)}
     return listaSuits
   end
 
@@ -269,12 +270,11 @@ class TADsPec
         metodos = TADsPec.transformar_metodos_testear args[1..-1]
         metodos.each{|metodo| TADsPec.testear_metodo args[0], metodo}
       end
-      Object.send(:remove_method,:deberia)
+      BasicObject.send(:remove_method,:deberia)
       TADsPec.mostrar_resultado
       @@resultados_asserts = []
       return
   end
-
 end
 
 
