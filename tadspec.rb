@@ -71,12 +71,16 @@ class TADsPec
 
     @@tener_ = Proc.new do |args|
     resultado = ResultadoAssert.new
-      if(args[1].is_a? Array)
-        if(self.instance_variable_get(args[0]).instance_exec(args[1][1], &args[1][0]).paso?)
+      if((args[1].is_a? Array) && (args[1][0].is_a? Proc))
+        resultadoPrueba = self.instance_variable_get(args[0]).instance_exec(args[1][1], &args[1][0])
+        if(resultadoPrueba.paso?)
           resultado.set_descripcion 'El resultado fue el esperado'
           resultado.set_resultado 1
         else
-          resultado.set_descripcion 'FALLO: La variable: '+ self.instance_variable_get(args[0]).to_s + ' no cumplio la condicion esperada'
+          descripcion = resultadoPrueba.get_descripcion
+          descripcion = descripcion.to_s[6..-1]
+          descripcion = 'FALLO: '+' la variable '+ args[0] + ' de valor '+ self.instance_variable_get(args[0]).to_s + ' tuvo este problema: ' + descripcion
+          resultado.set_descripcion descripcion
           resultado.set_resultado 2
         end
       else
@@ -84,7 +88,7 @@ class TADsPec
           resultado.set_descripcion 'El resultado fue el esperado'
           resultado.set_resultado 1
         else
-          resultado.set_descripcion 'FALLO: La variable ' + self.instance_variable_get(args[0]).to_s + ' no es '+args[1].to_s
+          resultado.set_descripcion 'FALLO: La variable: '+args[0].to_s+' vale: ' + self.instance_variable_get(args[0]).to_s + ', no: '+args[1].to_s
           resultado.set_resultado 2
         end
       end
@@ -194,11 +198,11 @@ class TADsPec
       return [@@uno_de_estos, valor]
     end
   instancia.singleton_class.send(:define_method,:ser) do |valor|
-      if ((!valor.is_a? Array)  || (!valor[0].respond_to? :call))
-        return [@@ser, valor]
-      else
-        return valor
-      end
+    if((valor.is_a? Array) && (valor[0].is_a? Proc))
+      return valor
+    else
+      return [@@ser, valor]
+    end
   end
 
   instancia.singleton_class.send(:define_method, :entender) do |mensaje|
@@ -365,6 +369,9 @@ end
 
 class Persona
   @edad
+  def initialize
+    @lista = [1,2,3]
+  end
   def set edad
     @edad = edad
   end
@@ -383,6 +390,7 @@ class SuitPi
   @nico.set 30
   @leandro = Persona.new
   @leandro.set 22
+
   end
 
   def testear_que_holis
@@ -400,6 +408,10 @@ class SuitPi
   end
   def testear_que_tener
     @leandro.deberia tener_edad mayor_a 23
+    [1,2].deberia ser [1,2,3]
+    [1,2].deberia ser uno_de_estos [[1],1,[1,2]]
+    @leandro.deberia tener_lista [1,2,3,4]
+    @leandro.deberia tener_lista uno_de_estos [[1,2,3]]
   end
 end
 
