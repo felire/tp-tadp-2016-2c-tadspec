@@ -188,6 +188,10 @@ class TADsPec
   end
 
   def self.agregar_metodos_suites instancia
+
+  instancia.singleton_class.send(:define_singleton_method,:soy_singleton) do
+    true
+  end
   instancia.singleton_class.send(:define_method,:mayor_a) do |valor|
       return [@@mayor_a , valor]
     end
@@ -238,8 +242,8 @@ class TADsPec
     |valor| clases = clases + [valor]
     end
     listaSuits = clases.select {|clase| TADsPec.is_suite? clase}
-    listaSuits = listaSuits.select {|clase| !(clase.respond_to? :new)}
-    return listaSuits
+    hola = listaSuits.select {|classe| !(classe.respond_to? :soy_singleton)}
+    return hola
   end
 
   def self.ejecutar_test_suit claseATestear
