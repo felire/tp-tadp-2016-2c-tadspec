@@ -19,7 +19,6 @@ class ResultadoAssert
   end
 end
 
-
 class TADsPec
 
     @@resultados_asserts = []
@@ -45,7 +44,42 @@ class TADsPec
         resultado.set_resultado 2
       end
       resultado
+      end
+
+    @@ser_ = Proc.new do |metodo|
+      resultado = ResultadoAssert.new
+      if(self.send(metodo))
+      resultado.set_descripcion 'El resultado fue el esperado'
+      resultado.set_resultado 1
+      else
+      resultado.set_descripcion 'El resultado no fue el esperado'
+      resultado.set_resultado 2
+      end
+      resultado
     end
+
+    @@tener_ = Proc.new do |args|
+    resultado = ResultadoAssert.new
+      if(args[1].is_a? Array)
+        if(self.instance_variable_get(args[0]).instance_exec(args[1][1], &args[1][0]))
+          resultado.set_descripcion 'El resultado fue el esperado'
+          resultado.set_resultado 1
+        else
+          resultado.set_descripcion 'El resultado no fue el esperado'
+          resultado.set_resultado 2
+        end
+      else
+        if(self.instance_variable_get(args[0]) == args[1])
+          resultado.set_descripcion 'El resultado fue el esperado'
+          resultado.set_resultado 1
+        else
+          resultado.set_descripcion 'El resultado no fue el esperado'
+          resultado.set_resultado 2
+        end
+      end
+     resultado
+    end
+
     @@mayor_a =  Proc.new do |valor|
       resultado = ResultadoAssert.new
       if(self > valor)
@@ -134,15 +168,16 @@ class TADsPec
   instancia.singleton_class.send(:define_method,:method_missing) do |symbol,*args|
       if(symbol.to_s.start_with? 'ser_')
         metodo = symbol.to_s[4..-1] +'?'
-        return [Proc.new do self.send(metodo) end]
+        return [@@ser_, metodo]
       end
       if(symbol.to_s.start_with? 'tener_')
         atributo = '@' + symbol.to_s[6..-1]
-        if(args[0].is_a? Array)
-          return [Proc.new do self.instance_variable_get(atributo).instance_exec(args[0][1], &args[0][0]) end]
-        else
-          return [Proc.new do self.instance_variable_get(atributo) == args[0] end]
-        end
+        return [@@tener_, [atributo, args[0]]]
+        #if(args[0].is_a? Array)
+        #  return [Proc.new do self.instance_variable_get(atributo).instance_exec(args[0][1], &args[0][0]) end]
+        #else
+        #  return [Proc.new do self.instance_variable_get(atributo) == args[0] end]
+        #end
       else
         super(symbol, *args)
       end
@@ -173,8 +208,8 @@ class TADsPec
     metodos = metodos.select {|metodo| TADsPec.is_test? metodo}
     metodos.each {|metodo|
     @@resultadoMetodo = ResultadoTest.new
-    @@resultados_asserts = @@resultados_asserts+[@@resultadoMetodo]
-    instancia.send(metodo)}
+    instancia.send(metodo)
+    @@resultados_asserts = @@resultados_asserts+[@@resultadoMetodo] }
   end
 
   def self.transformar_metodos_testear args
@@ -196,6 +231,7 @@ class TADsPec
       Object.send(:remove_method,:deberia)
     return
   end
+
 end
 
 
@@ -240,23 +276,67 @@ class Suite
     7.deberia ser mayor_a 2
     7.deberia ser mayor_a 8
   end
-
-  def self.testeame
-    TADsPec.testear Suite , :testear_que_es_7
-  end
 end
 
 class Suite2
-  def testear_que_es_7
-    7.deberia ser 7
+  def testear_que_es_8
+    7.deberia ser 8
   end
 
   def testear_que_hola
-    7.deberia ser 8
     7.deberia ser mayor_a 2
     7.deberia ser mayor_a 8
     Object.deberia entender :new
   end
+end
 
+class Ser_o_no_ser
+  def testear_que_true
+    true.deberia ser false
+    true.deberia ser true
+    22.deberia ser uno_de_estos [7, 22, "hola"]
+    21.deberia ser uno_de_estos [7, 22, "hola"]
+  end
+end
+
+class Persona
+  @edad
+  def set edad
+    @edad = edad
+  end
+  def edad
+    @edad
+  end
+  def viejo?
+    @edad > 29
+  end
+end
+
+class SuitPi
+
+  def initialize
+  @nico = Persona.new
+  @nico.set 30
+  @leandro = Persona.new
+  @leandro.set 22
+  end
+
+  def testear_que_holis
+  @nico.deberia ser_viejo    # pasa: Nico tiene edad 30. #@nico.viejo?.deberia ser true # La linea de arriba es equivalente a esta
+  @leandro.deberia ser_viejo # falla: Leandro tiene 22.
+
+  @leandro.deberia tener_edad 22 # pasa
+
+  #leandro.deberia tener_nombre "leandro" # falla: no hay atributo nombre
+
+  @leandro.deberia tener_nombre nil # pasa
+
+  @leandro.deberia tener_edad mayor_a 20 # pasa
+
+  @leandro.deberia tener_edad menor_a 25 # pasa
+
+  @leandro.deberia tener_edad uno_de_estos [7, 22, "hola"] # pasa
+  #@leandro.deberia ser_joven # explota: Leandro no entiende el mensaje joven?
+  end
 end
 
