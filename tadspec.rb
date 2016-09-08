@@ -1,7 +1,9 @@
 class ResultadoAssert
+
   @descripcion
   @resultado # 1 paso, 2 fallo, 3 exploto
   @excepcion # es nil a menos que el resultado sea 3
+
   def set_descripcion desc
     @descripcion = desc
   end
@@ -18,7 +20,6 @@ class ResultadoAssert
     puts @descripcion
     puts ' '
   end
-
   def paso?
     @resultado == 1
   end
@@ -33,6 +34,7 @@ end
 class TADsPec
 
     @@resultados_asserts = []
+
     @@uno_de_estos = Proc.new do |valor|
       resultado= ResultadoAssert.new
       if(valor.include? self)
@@ -60,17 +62,17 @@ class TADsPec
     @@ser_ = Proc.new do |metodo|
       resultado = ResultadoAssert.new
       if(self.send(metodo))
-      resultado.set_descripcion 'El resultado fue el esperado'
-      resultado.set_resultado 1
+        resultado.set_descripcion 'El resultado fue el esperado'
+        resultado.set_resultado 1
       else
-      resultado.set_descripcion 'FALLO: El metodo: '+metodo.to_s+' devuelve false'
-      resultado.set_resultado 2
+        resultado.set_descripcion 'FALLO: El metodo: '+metodo.to_s+' devuelve false'
+        resultado.set_resultado 2
       end
       resultado
     end
 
     @@tener_ = Proc.new do |args|
-    resultado = ResultadoAssert.new
+      resultado = ResultadoAssert.new
       if((args[1].is_a? Array) && (args[1][0].is_a? Proc))
         resultadoPrueba = self.instance_variable_get(args[0]).instance_exec(args[1][1], &args[1][0])
         if(resultadoPrueba.paso?)
@@ -92,7 +94,7 @@ class TADsPec
           resultado.set_resultado 2
         end
       end
-     resultado
+      resultado
     end
 
     @@mayor_a =  Proc.new do |valor|
@@ -136,6 +138,7 @@ class TADsPec
       end
       resultado
     end
+
   def self.is_suite? clase
     clase.instance_methods.any?{|me| is_test? me}
   end
@@ -181,39 +184,38 @@ class TADsPec
   end
 
   def self.agregar_deberia
-    BasicObject.send(:define_method,:deberia) do
-    |args|
-             TADsPec.agregar_asercion_actual self.instance_exec(args[1], &args[0])
+    BasicObject.send(:define_method,:deberia) do |args|
+      TADsPec.agregar_asercion_actual self.instance_exec(args[1], &args[0])
     end
   end
 
   def self.agregar_metodos_suites instancia
 
-  instancia.singleton_class.send(:define_singleton_method,:soy_singleton) do
-    true
-  end
-  instancia.singleton_class.send(:define_method,:mayor_a) do |valor|
-      return [@@mayor_a , valor]
+    instancia.singleton_class.send(:define_method,:mayor_a) do |valor|
+        return [@@mayor_a , valor]
     end
-  instancia.singleton_class.send(:define_method,:menor_a) do |valor|
-      return [@@menor_a, valor]
-    end
-  instancia.singleton_class.send(:define_method,:uno_de_estos) do |valor|
-      return [@@uno_de_estos, valor]
-    end
-  instancia.singleton_class.send(:define_method,:ser) do |valor|
-    if((valor.is_a? Array) && (valor[0].is_a? Proc))
-      return valor
-    else
-      return [@@ser, valor]
-    end
-  end
 
-  instancia.singleton_class.send(:define_method, :entender) do |mensaje|
-    return [@@entender, mensaje]
-  end
+    instancia.singleton_class.send(:define_method,:menor_a) do |valor|
+        return [@@menor_a, valor]
+    end
 
-  instancia.singleton_class.send(:define_method,:method_missing) do |symbol,*args|
+    instancia.singleton_class.send(:define_method,:uno_de_estos) do |valor|
+        return [@@uno_de_estos, valor]
+    end
+
+    instancia.singleton_class.send(:define_method,:ser) do |valor|
+      if((valor.is_a? Array) && (valor[0].is_a? Proc))
+        return valor
+      else
+        return [@@ser, valor]
+      end
+    end
+
+    instancia.singleton_class.send(:define_method, :entender) do |mensaje|
+      return [@@entender, mensaje]
+    end
+
+    instancia.singleton_class.send(:define_method,:method_missing) do |symbol,*args|
       if(symbol.to_s.start_with? 'ser_')
         metodo = symbol.to_s[4..-1] +'?'
         return [@@ser_, metodo]
@@ -227,9 +229,9 @@ class TADsPec
     end
   end
 
-    def self.testear_metodo clase , metodo
+  def self.testear_metodo clase, metodo
     instancia = clase.new
-    self.agregar_metodos_suites instancia
+    TADsPec.agregar_metodos_suites instancia
     @@resultadoMetodo = ResultadoTest.new
     @@resultadoMetodo.set_nombre_test metodo
     instancia.send(metodo)
@@ -238,12 +240,12 @@ class TADsPec
 
   def self.obtener_lista_suits
     clases = []
-    ObjectSpace.each_object(Class).each do
-    |valor| clases = clases + [valor]
+    ObjectSpace.each_object(Class).each do |valor|
+      clases = clases + [valor]
     end
-    listaSuits = clases.select {|clase| TADsPec.is_suite? clase}
-    hola = listaSuits.select {|classe| !(classe.respond_to? :soy_singleton)}
-    return hola
+    listaSuitsYSingletons = clases.select {|clase| TADsPec.is_suite? clase}
+    listaSuits = listaSuitsYSingletons.select {|clase| !(clase.to_s.start_with? '#')} #sacamos a las singletons
+    return listaSuits
   end
 
   def self.ejecutar_test_suit claseATestear
@@ -265,19 +267,19 @@ class TADsPec
   end
 
   def self.testear *args
-      self.agregar_deberia
-      if(args[0] == nil)
-        TADsPec.obtener_lista_suits.each {|suit| TADsPec.ejecutar_test_suit suit}
-      elsif((TADsPec.is_suite? args[0]) && args[1] == nil)
-        self.ejecutar_test_suit args[0]
-      elsif((TADsPec.is_suite? args[0]) && args[1] != nil)
-        metodos = TADsPec.transformar_metodos_testear args[1..-1]
-        metodos.each{|metodo| TADsPec.testear_metodo args[0], metodo}
-      end
-      BasicObject.send(:remove_method,:deberia)
-      TADsPec.mostrar_resultado
-      @@resultados_asserts = []
-      return
+    self.agregar_deberia
+    if(args[0] == nil)
+      TADsPec.obtener_lista_suits.each {|suit| TADsPec.ejecutar_test_suit suit}
+    elsif((TADsPec.is_suite? args[0]) && args[1] == nil)
+      self.ejecutar_test_suit args[0]
+    elsif((TADsPec.is_suite? args[0]) && args[1] != nil)
+      metodos = TADsPec.transformar_metodos_testear args[1..-1]
+      metodos.each{|metodo| TADsPec.testear_metodo args[0], metodo}
+    end
+    BasicObject.send(:remove_method,:deberia)
+    TADsPec.mostrar_resultado
+    @@resultados_asserts = []
+    return
   end
 end
 
@@ -330,11 +332,13 @@ class ResultadoTest #Resultado de un metodo test
   def mensaje_fallo
     self.assert_fallidos.each{|assert| assert.mostrar}
   end
+
   def imprimir_mierdita
     @resultados.each{ |a| a.mostrar}
   end
 end
 
+#Tests
 
 class Suite
   def testear_que_es_7
