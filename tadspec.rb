@@ -1,3 +1,22 @@
+class Mock
+  @clase
+  @metodo
+  @cuerpo
+
+  def set_clase c
+    @clase = c
+  end
+  def set_metodo m
+    @metodo = m
+  end
+  def set_cuerpo c
+    @cuerpo = c
+  end
+  def restaurar
+    @clase.send(:define_method, @metodo, @cuerpo)
+  end
+end
+
 class ResultadoAssert
 
   @descripcion
@@ -33,111 +52,112 @@ end
 
 class TADsPec
 
-    @@resultados_asserts = []
+  @@resultados_asserts = []
+  @@mocks = []
 
-    @@uno_de_estos = Proc.new do |valor|
-      resultado= ResultadoAssert.new
-      if(valor.include? self)
-        resultado.set_descripcion 'El resultado fue el esperado: '+ self.to_s + ' esta en la lista'
-        resultado.set_resultado 1
-      else
-        resultado.set_descripcion 'FALLO: '+ self.to_s + ' no se encuentra en la lista: '+ valor.to_s
-        resultado.set_resultado 2
-      end
-      resultado
+  @@uno_de_estos = Proc.new do |valor|
+    resultado= ResultadoAssert.new
+    if(valor.include? self)
+      resultado.set_descripcion 'El resultado fue el esperado: '+ self.to_s + ' esta en la lista'
+      resultado.set_resultado 1
+    else
+      resultado.set_descripcion 'FALLO: '+ self.to_s + ' no se encuentra en la lista: '+ valor.to_s
+      resultado.set_resultado 2
     end
+    resultado
+  end
 
-    @@ser = Proc.new do |valor|
-      resultado=ResultadoAssert.new
-      if(self == valor)
+  @@ser = Proc.new do |valor|
+    resultado=ResultadoAssert.new
+    if(self == valor)
+      resultado.set_descripcion 'El resultado fue el esperado'
+      resultado.set_resultado 1
+    else
+      resultado.set_descripcion 'FALLO: '+self.to_s + ' no es '+ valor.to_s
+      resultado.set_resultado 2
+    end
+    resultado
+  end
+
+  @@ser_ = Proc.new do |metodo|
+    resultado = ResultadoAssert.new
+    if(self.send(metodo))
+      resultado.set_descripcion 'El resultado fue el esperado'
+      resultado.set_resultado 1
+    else
+      resultado.set_descripcion 'FALLO: El metodo: '+metodo.to_s+' devuelve false'
+      resultado.set_resultado 2
+    end
+    resultado
+  end
+
+  @@tener_ = Proc.new do |args|
+    resultado = ResultadoAssert.new
+    if((args[1].is_a? Array) && (args[1][0].is_a? Proc))
+      resultadoPrueba = self.instance_variable_get(args[0]).instance_exec(args[1][1], &args[1][0])
+      if(resultadoPrueba.paso?)
         resultado.set_descripcion 'El resultado fue el esperado'
         resultado.set_resultado 1
       else
-        resultado.set_descripcion 'FALLO: '+self.to_s + ' no es '+ valor.to_s
+        descripcion = resultadoPrueba.get_descripcion
+        descripcion = descripcion.to_s[6..-1]
+        descripcion = 'FALLO: '+' la variable '+ args[0] + ' de valor '+ self.instance_variable_get(args[0]).to_s + ' tuvo este problema: ' + descripcion
+        resultado.set_descripcion descripcion
         resultado.set_resultado 2
       end
-      resultado
-      end
-
-    @@ser_ = Proc.new do |metodo|
-      resultado = ResultadoAssert.new
-      if(self.send(metodo))
+    else
+      if(self.instance_variable_get(args[0]) == args[1])
         resultado.set_descripcion 'El resultado fue el esperado'
         resultado.set_resultado 1
       else
-        resultado.set_descripcion 'FALLO: El metodo: '+metodo.to_s+' devuelve false'
+        resultado.set_descripcion 'FALLO: La variable: '+args[0].to_s+' vale: ' + self.instance_variable_get(args[0]).to_s + ', no: '+args[1].to_s
         resultado.set_resultado 2
       end
-      resultado
     end
+    resultado
+  end
 
-    @@tener_ = Proc.new do |args|
-      resultado = ResultadoAssert.new
-      if((args[1].is_a? Array) && (args[1][0].is_a? Proc))
-        resultadoPrueba = self.instance_variable_get(args[0]).instance_exec(args[1][1], &args[1][0])
-        if(resultadoPrueba.paso?)
-          resultado.set_descripcion 'El resultado fue el esperado'
-          resultado.set_resultado 1
-        else
-          descripcion = resultadoPrueba.get_descripcion
-          descripcion = descripcion.to_s[6..-1]
-          descripcion = 'FALLO: '+' la variable '+ args[0] + ' de valor '+ self.instance_variable_get(args[0]).to_s + ' tuvo este problema: ' + descripcion
-          resultado.set_descripcion descripcion
-          resultado.set_resultado 2
-        end
-      else
-        if(self.instance_variable_get(args[0]) == args[1])
-          resultado.set_descripcion 'El resultado fue el esperado'
-          resultado.set_resultado 1
-        else
-          resultado.set_descripcion 'FALLO: La variable: '+args[0].to_s+' vale: ' + self.instance_variable_get(args[0]).to_s + ', no: '+args[1].to_s
-          resultado.set_resultado 2
-        end
-      end
-      resultado
+  @@mayor_a =  Proc.new do |valor|
+    resultado = ResultadoAssert.new
+    if(self > valor)
+      resultado.set_descripcion 'El resultado fue el esperado: ' + self.to_s + '>' + valor.to_s
+      resultado.set_resultado 1
+    elsif(self < valor)
+      resultado.set_descripcion 'FALLO: ' + self.to_s + '<' + valor.to_s + ' y se esperaba que: ' + self.to_s +  '>' +  valor.to_s
+      resultado.set_resultado 2
+    elsif(self == valor)
+      resultado.set_descripcion 'FALLO: ' + self.to_s + '==' + valor.to_s + ' y se esperaba que: ' + self.to_s +  '>' +  valor.to_s
+      resultado.set_resultado 2
     end
+    resultado
+  end
 
-    @@mayor_a =  Proc.new do |valor|
-      resultado = ResultadoAssert.new
-      if(self > valor)
-        resultado.set_descripcion 'El resultado fue el esperado: ' + self.to_s + '>' + valor.to_s
-        resultado.set_resultado 1
-      elsif(self < valor)
-        resultado.set_descripcion 'FALLO: ' + self.to_s + '<' + valor.to_s + ' y se esperaba que: ' + self.to_s +  '>' +  valor.to_s
-        resultado.set_resultado 2
-      elsif(self == valor)
-        resultado.set_descripcion 'FALLO: ' + self.to_s + '==' + valor.to_s + ' y se esperaba que: ' + self.to_s +  '>' +  valor.to_s
-        resultado.set_resultado 2
-      end
-      resultado
+  @@menor_a = Proc.new do |valor|
+    resultado = ResultadoAssert.new
+    if(self < valor)
+      resultado.set_descripcion 'El resultado fue el esperado: ' + self.to_s + ' < ' + valor.to_s
+      resultado.set_resultado 1
+    elsif(self > valor)
+      resultado.set_descripcion 'FALLO: ' + self.to_s + ' > ' + valor.to_s + ' y se esperaba que: ' + self.to_s +  ' < ' +  valor.to_s
+      resultado.set_resultado 2
+    elsif(self == valor)
+      resultado.set_descripcion 'FALLO: ' + self.to_s + ' == ' + valor.to_s + ' y se esperaba que: ' + self.to_s +  ' < ' +  valor.to_s
+      resultado.set_resultado 2
     end
+    resultado
+  end
 
-    @@menor_a = Proc.new do |valor|
-      resultado = ResultadoAssert.new
-      if(self < valor)
-        resultado.set_descripcion 'El resultado fue el esperado: ' + self.to_s + ' < ' + valor.to_s
-        resultado.set_resultado 1
-      elsif(self > valor)
-        resultado.set_descripcion 'FALLO: ' + self.to_s + ' > ' + valor.to_s + ' y se esperaba que: ' + self.to_s +  ' < ' +  valor.to_s
-        resultado.set_resultado 2
-      elsif(self == valor)
-        resultado.set_descripcion 'FALLO: ' + self.to_s + ' == ' + valor.to_s + ' y se esperaba que: ' + self.to_s +  ' < ' +  valor.to_s
-        resultado.set_resultado 2
-      end
-      resultado
+  @@entender = Proc.new do |mensaje|
+    resultado = ResultadoAssert.new
+    if(self.respond_to? mensaje)
+      resultado.set_descripcion 'El resultado fue el esperado: ' + self.to_s + ' entiende el metodo :' + mensaje.to_s
+      resultado.set_resultado 1
+    else
+      resultado.set_descripcion 'FALLO: ' + self.to_s + ' no entiende el metodo :' + mensaje.to_s
+      resultado.set_resultado 2
     end
-
-    @@entender = Proc.new do |mensaje|
-      resultado = ResultadoAssert.new
-      if(self.respond_to? mensaje)
-        resultado.set_descripcion 'El resultado fue el esperado: ' + self.to_s + ' entiende el metodo :' + mensaje.to_s
-        resultado.set_resultado 1
-      else
-        resultado.set_descripcion 'FALLO: ' + self.to_s + ' no entiende el metodo :' + mensaje.to_s
-        resultado.set_resultado 2
-      end
-      resultado
-    end
+    resultado
+  end
 
   def self.is_suite? clase
     clase.instance_methods.any?{|me| is_test? me}
@@ -148,7 +168,7 @@ class TADsPec
   end
 
   def self.imprimir_mierda
-     @@resultados_asserts.each { |a| a.imprimir_mierdita}
+    @@resultados_asserts.each { |a| a.imprimir_mierdita}
   end
 
   def self.mostrar_resultado
@@ -189,18 +209,41 @@ class TADsPec
     end
   end
 
+  def self.agregar_mock clase, metodo, cuerpo
+    mockNvo = Mock.new
+    mockNvo.set_clase clase
+    mockNvo.set_metodo metodo
+    mockNvo.set_cuerpo cuerpo
+    @@mocks = @@mocks+[mockNvo]
+  end
+
+  def self.borrar_mocks
+    @@mocks.each {|mock| mock.restaurar}
+    @@mocks = []
+  end
+
+  def self.agregar_mockear
+    BasicObject.send(:define_method, :mockear) do |nombreMetodo, &bloque|
+      cuerpo = self.instance_method(nombreMetodo).bind(self.new)
+      TADsPec.agregar_mock self, nombreMetodo, cuerpo
+      self.send(:define_method, nombreMetodo) do
+        self.instance_exec(&bloque)
+      end
+    end
+  end
+
   def self.agregar_metodos_suites instancia
 
     instancia.singleton_class.send(:define_method,:mayor_a) do |valor|
-        return [@@mayor_a , valor]
+      return [@@mayor_a , valor]
     end
 
     instancia.singleton_class.send(:define_method,:menor_a) do |valor|
-        return [@@menor_a, valor]
+      return [@@menor_a, valor]
     end
 
     instancia.singleton_class.send(:define_method,:uno_de_estos) do |valor|
-        return [@@uno_de_estos, valor]
+      return [@@uno_de_estos, valor]
     end
 
     instancia.singleton_class.send(:define_method,:ser) do |valor|
@@ -236,6 +279,7 @@ class TADsPec
     @@resultadoMetodo.set_nombre_test metodo
     instancia.send(metodo)
     @@resultados_asserts = @@resultados_asserts+[@@resultadoMetodo]
+    TADsPec.borrar_mocks
   end
 
   def self.obtener_lista_suits
@@ -254,10 +298,11 @@ class TADsPec
     metodos = instancia.methods
     metodos = metodos.select {|metodo| TADsPec.is_test? metodo}
     metodos.each {|metodo|
-    @@resultadoMetodo = ResultadoTest.new
-    @@resultadoMetodo.set_nombre_test metodo
-    instancia.send(metodo)
-    @@resultados_asserts = @@resultados_asserts+[@@resultadoMetodo] }
+      @@resultadoMetodo = ResultadoTest.new
+      @@resultadoMetodo.set_nombre_test metodo
+      instancia.send(metodo)
+      @@resultados_asserts = @@resultados_asserts+[@@resultadoMetodo]
+      TADsPec.borrar_mocks }
   end
 
   def self.transformar_metodos_testear args
@@ -268,6 +313,7 @@ class TADsPec
 
   def self.testear *args
     self.agregar_deberia
+    self.agregar_mockear
     if(args[0] == nil)
       TADsPec.obtener_lista_suits.each {|suit| TADsPec.ejecutar_test_suit suit}
     elsif((TADsPec.is_suite? args[0]) && args[1] == nil)
@@ -277,6 +323,7 @@ class TADsPec
       metodos.each{|metodo| TADsPec.testear_metodo args[0], metodo}
     end
     BasicObject.send(:remove_method,:deberia)
+    BasicObject.send(:remove_method,:mockear)
     TADsPec.mostrar_resultado
     @@resultados_asserts = []
     return
@@ -391,28 +438,45 @@ class Persona
   end
 end
 
+class Numero
+  def pepe
+    'posta'
+  end
+end
+
+class Mockeame
+  def testear_que_puedo_testear
+    Numero.mockear(:pepe) do
+      'mockeado'
+    end
+    num = Numero.new
+    puts num.pepe
+    7.deberia ser 7
+  end
+end
+
 class SuitPi
 
   def initialize
-  @nico = Persona.new
-  @nico.set 30
-  @leandro = Persona.new
-  @leandro.set 22
+    @nico = Persona.new
+    @nico.set 30
+    @leandro = Persona.new
+    @leandro.set 22
 
   end
 
   def testear_que_holis
-  @nico.deberia ser_viejo    # pasa: Nico tiene edad 30. #@nico.viejo?.deberia ser true # La linea de arriba es equivalente a esta
-  #@leandro.deberia ser_viejo # falla: Leandro tiene 22.
-  @leandro.deberia tener_edad 22 # pasa
-  #@leandro.deberia tener_edad 23
-  #@leandro.deberia tener_nombre "leandro"                                          #Santi: esto dice la variable no es leandro, deberia decir no existe la var edad
-  @leandro.deberia tener_nombre nil # pasa
-  @leandro.deberia tener_edad mayor_a 20 # pasa
-  @leandro.deberia tener_edad menor_a 25 # pasa
-  #@leandro.deberia tener_edad mayor_a 23
-  @leandro.deberia tener_edad uno_de_estos [7, 22, "hola"] # pasa
-  #@leandro.deberia ser_joven # explota: Leandro no entiende el mensaje joven?
+    @nico.deberia ser_viejo    # pasa: Nico tiene edad 30. #@nico.viejo?.deberia ser true # La linea de arriba es equivalente a esta
+    #@leandro.deberia ser_viejo # falla: Leandro tiene 22.
+    @leandro.deberia tener_edad 22 # pasa
+    #@leandro.deberia tener_edad 23
+    #@leandro.deberia tener_nombre "leandro"                                          #Santi: esto dice la variable no es leandro, deberia decir no existe la var edad
+    @leandro.deberia tener_nombre nil # pasa
+    @leandro.deberia tener_edad mayor_a 20 # pasa
+    @leandro.deberia tener_edad menor_a 25 # pasa
+    #@leandro.deberia tener_edad mayor_a 23
+    @leandro.deberia tener_edad uno_de_estos [7, 22, "hola"] # pasa
+    #@leandro.deberia ser_joven # explota: Leandro no entiende el mensaje joven?
   end
   def testear_que_tener
     @leandro.deberia tener_edad mayor_a 23
@@ -425,4 +489,3 @@ class SuitPi
     7.deberia ser mayor_a 7
   end
 end
-
