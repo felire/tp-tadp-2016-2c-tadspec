@@ -440,14 +440,14 @@ end
 
 class Numero
   def pepe
-    'posta'
+    'soy el metodo sin mockear '
   end
 end
 
 class Mockeame
   def testear_que_puedo_testear
     Numero.mockear(:pepe) do
-      'mockeado'
+      'soy el metodo mockeado'
     end
     num = Numero.new
     puts num.pepe
