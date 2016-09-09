@@ -103,7 +103,23 @@ class TestInitializer
     resultado
   end
 
-
+  @@explotar_con = Proc.new do |valor|
+        resultado = ResultadoAssert.new
+        begin
+            self.call
+            resultado.set_descripcion 'FALLO: el bloque no genero excepcion'
+            resultado.set_resultado 2
+          rescue Exception=>e
+                   if(e.class==valor)
+                              resultado.set_descripcion'El resultado fue el esperado: el bloque fallo con la exceocion ' + valor.to_s
+                              resultado.set_resultado 1
+                            else
+                                       resultado.set_descripcion'FALLO: el bloque fallo con otra excepcion'
+                                       resultado.set_resultado 2
+                                     end
+                 end
+        resultado
+      end
 
   protected
   def self.agregar_deberia
@@ -154,6 +170,10 @@ class TestInitializer
       instancia.singleton_class.send(:define_method, :entender) do |mensaje|
         return [@@entender, mensaje]
       end
+
+      instancia.singleton_class.send(:define_method, :explotar_con) do |excepcion|
+        return[@@explotar_con,excepcion]
+           end
 
       instancia.singleton_class.send(:define_method,:method_missing) do |symbol,*args|
         if(symbol.to_s.start_with? 'ser_')

@@ -134,6 +134,47 @@ describe 'Metodos de Prueba' do
     expect(TADsPec.testear_metodo(instancia, :testear_que_entiende_new).paso_test?).to equal(true)
     TestInitializer.finalizar_tests
   end
+  it 'No deberia entender' do
+    class SuitePrueba
+
+      def testear_que_no_entiende_new
+        Object.deberia entender :pepe
+      end
+    end
+    instancia = SuitePrueba.new
+    TestInitializer.inicializar_tests
+    TestInitializer.agregar_metodos_a_suite instancia
+    expect(TADsPec.testear_metodo(instancia, :testear_que_no_entiende_new).paso_test?).to equal(false)
+    TestInitializer.finalizar_tests
+  end
+  it 'Deberia Explotar' do
+    class SuitePrueba
+
+      def testear_que_explota
+        procedimiento = Proc.new do 7/0 end
+        procedimiento.deberia explotar_con ZeroDivisionError
+      end
+    end
+    instancia = SuitePrueba.new
+    TestInitializer.inicializar_tests
+    TestInitializer.agregar_metodos_a_suite instancia
+    expect(TADsPec.testear_metodo(instancia, :testear_que_explota).paso_test?).to equal(true)
+    TestInitializer.finalizar_tests
+  end
+  it 'No deberia Explotar' do
+    class SuitePrueba2
+
+      def testear_que_no_explota
+        procedimiento = Proc.new do 7/1 end
+        procedimiento.deberia explotar_con ZeroDivisionError
+      end
+    end
+    instancia = SuitePrueba2.new
+    TestInitializer.inicializar_tests
+    TestInitializer.agregar_metodos_a_suite instancia
+    expect(TADsPec.testear_metodo(instancia, :testear_que_no_explota).paso_test?).to equal(false)
+    TestInitializer.finalizar_tests
+  end
 end
 
 
