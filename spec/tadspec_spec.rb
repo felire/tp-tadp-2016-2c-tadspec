@@ -228,4 +228,27 @@ describe 'Metodos de Prueba' do
     expect(TADsPec.testear_metodo(instancia, :testear_que_mockea).paso_test?).to equal(true)
     TestInitializer.finalizar_tests
   end
+
+  it 'Deberia testearnos a nosotros' do
+    class Prueba
+      def testear_que_true
+      7.deberia ser 7
+      end
+    end
+
+    class Testeador
+      def testear_que_testea_bien
+      instancia = Prueba.new
+      TestInitializer.inicializar_tests
+      TestInitializer.agregar_metodos_a_suite instancia
+      TADsPec.testear_metodo(instancia, :testear_que_true).paso_test?.deberia ser true
+
+      end
+    end
+    instancia = Testeador.new
+    TestInitializer.inicializar_tests
+    TestInitializer.agregar_metodos_a_suite instancia
+    expect(TADsPec.testear_metodo(instancia, :testear_que_testea_bien).paso_test?).to equal(true)
+    TestInitializer.finalizar_tests
+  end
 end
