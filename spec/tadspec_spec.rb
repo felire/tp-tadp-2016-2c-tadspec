@@ -74,6 +74,21 @@ describe 'Metodos de Prueba' do
     TestInitializer.finalizar_tests
   end
   it 'Deberia ser todo' do
+    class Persona
+      @edad
+      def initialize
+        @lista = [1,2,3]
+      end
+      def set edad
+        @edad = edad
+      end
+      def edad
+        @edad
+      end
+      def viejo?
+        @edad > 29
+      end
+    end
     class SuitePrueba
 
       def initialize
@@ -98,6 +113,21 @@ describe 'Metodos de Prueba' do
     TestInitializer.finalizar_tests
   end
   it 'No deberia ser todo' do
+    class Persona
+      @edad
+      def initialize
+        @lista = [1,2,3]
+      end
+      def set edad
+        @edad = edad
+      end
+      def edad
+        @edad
+      end
+      def viejo?
+        @edad > 29
+      end
+    end
     class SuitePrueba
 
       def initialize
@@ -175,84 +205,27 @@ describe 'Metodos de Prueba' do
     expect(TADsPec.testear_metodo(instancia, :testear_que_no_explota).paso_test?).to equal(false)
     TestInitializer.finalizar_tests
   end
-end
 
-
-
-
-
-
-#Tests
-
-
-
-
-
-
-class Persona
-  @edad
-  def initialize
-    @lista = [1,2,3]
-  end
-  def set edad
-    @edad = edad
-  end
-  def edad
-    @edad
-  end
-  def viejo?
-    @edad > 29
-  end
-end
-
-class Numero
-  def pepe
-    'soy el metodo sin mockear '
-  end
-end
-
-class Mockeame
-  def testear_que_puedo_testear
-    Numero.mockear(:pepe) do
-      'soy el metodo mockeado'
+  it 'Deberia estar mockeada' do
+    class Numero
+      def dameNumero
+        0
+      end
     end
-    num = Numero.new
-    puts num.pepe
-    7.deberia ser 7
-  end
-end
+      class SuiteMock
+        def testear_que_mockea
+          Numero.mockear(:dameNumero) do
+            1
+          end
+          num = Numero.new
+          num.dameNumero.deberia ser 1
+        end
+      end
 
-class SuitPi
-
-  def initialize
-    @nico = Persona.new
-    @nico.set 30
-    @leandro = Persona.new
-    @leandro.set 22
-
-  end
-
-  def testear_que_holis
-    @nico.deberia ser_viejo    # pasa: Nico tiene edad 30. #@nico.viejo?.deberia ser true # La linea de arriba es equivalente a esta
-    #@leandro.deberia ser_viejo # falla: Leandro tiene 22.
-    @leandro.deberia tener_edad 22 # pasa
-    #@leandro.deberia tener_edad 23
-    #@leandro.deberia tener_nombre "leandro"                                          #Santi: esto dice la variable no es leandro, deberia decir no existe la var edad
-    @leandro.deberia tener_nombre nil # pasa
-    @leandro.deberia tener_edad mayor_a 20 # pasa
-    @leandro.deberia tener_edad menor_a 25 # pasa
-    #@leandro.deberia tener_edad mayor_a 23
-    @leandro.deberia tener_edad uno_de_estos [7, 22, "hola"] # pasa
-    #@leandro.deberia ser_joven # explota: Leandro no entiende el mensaje joven?
-  end
-  def testear_que_tener
-    @leandro.deberia tener_edad mayor_a 23
-    [1,2].deberia ser [1,2,3]
-    [1,2].deberia ser uno_de_estos [[1],1,[1,2]]
-    @leandro.deberia tener_lista [1,2,3,4]
-    @leandro.deberia tener_lista uno_de_estos [[1,2,3]]
-  end
-  def testear_que_funca8
-    7.deberia ser mayor_a 7
+    instancia = SuiteMock.new
+    TestInitializer.inicializar_tests
+    TestInitializer.agregar_metodos_a_suite instancia
+    expect(TADsPec.testear_metodo(instancia, :testear_que_mockea).paso_test?).to equal(true)
+    TestInitializer.finalizar_tests
   end
 end
