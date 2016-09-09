@@ -49,6 +49,91 @@ describe 'Metodos de Prueba' do
     expect(TADsPec.testear_metodo(instancia, :testear_que_2_menor_a_3).paso_test?).to equal(false)
     TestInitializer.finalizar_tests
   end
+  it 'Deberia ser uno de esos' do
+    class Ser_o_no_ser
+      def testear_que_true
+        22.deberia ser uno_de_estos [7, 22, "hola"]
+      end
+    end
+    instancia = Ser_o_no_ser.new
+    TestInitializer.inicializar_tests
+    TestInitializer.agregar_metodos_a_suite instancia
+    expect(TADsPec.testear_metodo(instancia, :testear_que_true).paso_test?).to equal(true)
+    TestInitializer.finalizar_tests
+  end
+  it 'No deberia ser uno de esos' do
+    class Ser_o_no_ser
+      def testear_que_true
+        23.deberia ser uno_de_estos [7, 22, "hola"]
+      end
+    end
+    instancia = Ser_o_no_ser.new
+    TestInitializer.inicializar_tests
+    TestInitializer.agregar_metodos_a_suite instancia
+    expect(TADsPec.testear_metodo(instancia, :testear_que_true).paso_test?).to equal(false)
+    TestInitializer.finalizar_tests
+  end
+  it 'Deberia ser todo' do
+    class SuitePrueba
+
+      def initialize
+        @nico = Persona.new
+        @nico.set 30
+        @leandro = Persona.new
+        @leandro.set 22
+
+      end
+
+      def testear_que_holis
+        @nico.deberia ser_viejo    # pasa: Nico tiene edad 30. #@nico.viejo?.deberia ser true
+        @leandro.deberia tener_nombre nil # pasa
+        @leandro.deberia tener_edad mayor_a 20 # pasa
+        @leandro.deberia tener_edad menor_a 25 # pasa
+      end
+    end
+    instancia = SuitePrueba.new
+    TestInitializer.inicializar_tests
+    TestInitializer.agregar_metodos_a_suite instancia
+    expect(TADsPec.testear_metodo(instancia, :testear_que_holis).paso_test?).to equal(true)
+    TestInitializer.finalizar_tests
+  end
+  it 'No deberia ser todo' do
+    class SuitePrueba
+
+      def initialize
+        @nico = Persona.new
+        @nico.set 30
+        @leandro = Persona.new
+        @leandro.set 22
+
+      end
+
+      def testear_que_holis
+        @nico.deberia ser_viejo    # pasa: Nico tiene edad 30. #@nico.viejo?.deberia ser true
+        @leandro.deberia tener_nombre 'a' # pasa
+        @leandro.deberia tener_edad mayor_a 20 # pasa
+        @leandro.deberia tener_edad menor_a 25 # pasa
+      end
+    end
+    instancia = SuitePrueba.new
+    TestInitializer.inicializar_tests
+    TestInitializer.agregar_metodos_a_suite instancia
+    expect(TADsPec.testear_metodo(instancia, :testear_que_holis).paso_test?).to equal(false)
+    TestInitializer.finalizar_tests
+  end
+  it 'Deberia entender' do
+    class SuitePrueba
+
+      def testear_que_entiende_new
+        Object.deberia entender :new
+      end
+    end
+    instancia = SuitePrueba.new
+    TestInitializer.inicializar_tests
+    TestInitializer.agregar_metodos_a_suite instancia
+    expect(TADsPec.testear_metodo(instancia, :testear_que_entiende_new).paso_test?).to equal(true)
+    TestInitializer.finalizar_tests
+  end
 end
 
 
@@ -60,28 +145,8 @@ end
 
 
 
-class Suite2
-  def testear_que_es_8
-    7.deberia ser 7
-    [1,2].deberia ser [1,2]
-    [1,true, false, 1].deberia ser [1,true, false, 1]
-  end
 
-  def testear_que_hola
-    7.deberia ser mayor_a 2
-    7.deberia ser mayor_a 8
-    Object.deberia entender :new
-  end
-end
 
-class Ser_o_no_ser
-  def testear_que_true
-    true.deberia ser false
-    true.deberia ser true
-    22.deberia ser uno_de_estos [7, 22, "hola"]
-    21.deberia ser uno_de_estos [7, 22, "hola"]
-  end
-end
 
 class Persona
   @edad
