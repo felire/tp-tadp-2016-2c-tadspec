@@ -159,6 +159,24 @@ class TADsPec
     resultado
   end
 
+  @@explotar_con = Proc.new do |valor|
+    resultado = ResultadoAssert.new
+    begin
+      self.call
+      resultado.set_descripcion 'FALLO: el bloque no genero excepcion'
+      resultado.set_resultado 2
+    rescue Exception=>e
+      if(e.class==valor)
+        resultado.set_descripcion'El resultado fue el esperado: el bloque fallo con la exceocion ' + valor.to_s
+        resultado.set_resultado 1
+      else
+        resultado.set_descripcion'FALLO: el bloque fallo con otra excepcion'
+        resultado.set_resultado 2
+      end
+    end
+    resultado
+  end
+
   def self.is_suite? clase
     clase.instance_methods.any?{|me| is_test? me}
   end
@@ -269,6 +287,10 @@ class TADsPec
       else
         super(symbol, *args)
       end
+    end
+
+    instancia.singleton_class.send(:define_method, :explotar_con) do |excepcion|
+      return[@@explotar_con,excepcion]
     end
   end
 
