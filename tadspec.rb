@@ -272,14 +272,10 @@ class TADsPec
     end
   end
 
-  def self.testear_metodo clase, metodo
-    instancia = clase.new
-    TADsPec.agregar_metodos_suites instancia
-    @@resultadoMetodo = ResultadoTest.new
-    @@resultadoMetodo.set_nombre_test metodo
-    instancia.send(metodo)
-    @@resultados_asserts = @@resultados_asserts+[@@resultadoMetodo]
-    TADsPec.borrar_mocks
+  def self.transformar_metodos_testear args
+    metodos = []
+    args.each {|metodo| metodos = metodos + ['testear_que_' + metodo.to_s]}
+    return metodos
   end
 
   def self.obtener_lista_suits
@@ -292,23 +288,21 @@ class TADsPec
     return listaSuits
   end
 
+  def self.testear_metodo instancia, metodo
+    @@resultadoMetodo = ResultadoTest.new
+    @@resultadoMetodo.set_nombre_test metodo
+    instancia.send(metodo)
+    @@resultados_asserts = @@resultados_asserts+[@@resultadoMetodo]
+    TADsPec.borrar_mocks
+  end
+
   def self.ejecutar_test_suit claseATestear
     instancia = claseATestear.new
     TADsPec.agregar_metodos_suites instancia
     metodos = instancia.methods
     metodos = metodos.select {|metodo| TADsPec.is_test? metodo}
     metodos.each {|metodo|
-      @@resultadoMetodo = ResultadoTest.new
-      @@resultadoMetodo.set_nombre_test metodo
-      instancia.send(metodo)
-      @@resultados_asserts = @@resultados_asserts+[@@resultadoMetodo]
-      TADsPec.borrar_mocks }
-  end
-
-  def self.transformar_metodos_testear args
-    metodos = []
-    args.each {|metodo| metodos = metodos + ['testear_que_' + metodo.to_s]}
-    return metodos
+      TADsPec.testear_metodo instancia, metodo }
   end
 
   def self.testear *args
@@ -319,8 +313,10 @@ class TADsPec
     elsif((TADsPec.is_suite? args[0]) && args[1] == nil)
       self.ejecutar_test_suit args[0]
     elsif((TADsPec.is_suite? args[0]) && args[1] != nil)
+      instancia = args[0].new
+      TADsPec.agregar_metodos_suites instancia
       metodos = TADsPec.transformar_metodos_testear args[1..-1]
-      metodos.each{|metodo| TADsPec.testear_metodo args[0], metodo}
+      metodos.each{|metodo| TADsPec.testear_metodo instancia, metodo}
     end
     BasicObject.send(:remove_method,:deberia)
     BasicObject.send(:remove_method,:mockear)
