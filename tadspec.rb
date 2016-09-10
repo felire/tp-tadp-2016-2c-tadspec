@@ -244,8 +244,8 @@ class TADsPec
     BasicObject.send(:define_method, :mockear) do |nombreMetodo, &bloque|
       cuerpo = self.instance_method(nombreMetodo)
       TADsPec.agregar_mock self, nombreMetodo, cuerpo
-      self.send(:define_method, nombreMetodo) do
-        self.instance_exec(&bloque)
+      self.send(:define_method, nombreMetodo) do |args|
+        self.instance_exec(args, &bloque)
       end
     end
   end
