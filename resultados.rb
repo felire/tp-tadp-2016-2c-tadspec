@@ -1,27 +1,12 @@
 class ResultadoTest #Resultado de un metodo test
+
+  attr_accessor :nombreTest, :nombreSuit, :desc_error
   def initialize
     @resultados = Array.new #Contiene la lista de resultados de los assserts dentro del  test
   end
 
-  def get_nombre_test
-    @nombreTest
-  end
-
-  def set_nombre_test nombre
-    @nombreTest = nombre
-  end
-  def get_nombre_suit
-    @nombreSuit
-  end
-  def set_nombre_suit nombre
-    @nombreSuit = nombre
-  end
   def resultado_final?   #Devuelve el resultado final del test
     @resultados.all? {|resultado| resultado}
-  end
-
-  def get_desc_error
-    @desc_error
   end
 
   def add resultadoAssert
@@ -55,22 +40,11 @@ end
 
 class ResultadoAssert
 
-  @descripcion
-  @resultado # 1 paso, 2 fallo, 3 exploto
-  @excepcion # es nil a menos que el resultado sea 3
+  attr_accessor :descripcion, :resultado, :excepcion
 
-  def set_descripcion desc
-    @descripcion = desc
-  end
-  def set_resultado resultado
-    @resultado = resultado
-  end
-  def get_resultado
-    @resultado
-  end
-  def get_descripcion
-    @descripcion
-  end
+  # resultado: 1 paso, 2 fallo, 3 exploto
+  # excepcion: es nil a menos que el resultado sea 3
+
   def mostrar
     puts @descripcion
     puts ' '

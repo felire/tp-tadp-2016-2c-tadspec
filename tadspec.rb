@@ -91,7 +91,7 @@ class Entender
   end
 end
 
-class Explotar_con
+class Explotar_con #Santi: nose testear esto asi que nose si esta bien
 
   def initialize excepcion
     @excepcion = excepcion
@@ -110,18 +110,12 @@ end
 
 class Mock
 
-  def set_clase c
-    @clase = c
-  end
-  def set_metodo m
-    @metodo = m
-  end
-  def set_cuerpo c
-    @cuerpo = c
-  end
+  attr_accessor :clase, :metodo, :cuerpo
+
   def restaurar
-    @clase.send(:define_method, @metodo, @cuerpo)
+    clase.send(:define_method, metodo, cuerpo)
   end
+
 end
 
 class TADsPec
@@ -166,11 +160,11 @@ class TADsPec
     puts 'Explotados: '+cantidadExplotados.to_s
     puts ' '
     puts 'Test Pasados con exito: '
-    pasados.each{|test| puts 'Nombre: '+ test.get_nombre_test.to_s}
+    pasados.each{|test| puts 'Nombre: '+ test.nombreTest.to_s}
     puts ' '
     puts 'Test Fallidos: '
     fallados.each{|test|
-      puts 'Nombre: ' + test.get_nombre_test.to_s
+      puts 'Nombre: ' + test.nombreTest.to_s
       puts ''
       puts 'Descripcion falla: '
       puts ' '
@@ -186,9 +180,9 @@ class TADsPec
 
   def self.agregar_mock clase, metodo, cuerpo
     mockNvo = Mock.new
-    mockNvo.set_clase clase
-    mockNvo.set_metodo metodo
-    mockNvo.set_cuerpo cuerpo
+    mockNvo.clase= clase
+    mockNvo.metodo= metodo
+    mockNvo.cuerpo= cuerpo
     @@mocks = @@mocks+[mockNvo]
   end
 
@@ -205,7 +199,7 @@ class TADsPec
 
   def self.testear_metodo instancia, metodo
     @@resultadoMetodo = ResultadoTest.new
-    @@resultadoMetodo.set_nombre_test metodo
+    @@resultadoMetodo.nombreTest= metodo
     instancia.send(metodo)
     @@resultados_asserts = @@resultados_asserts+[@@resultadoMetodo]
     TADsPec.borrar_mocks
@@ -213,11 +207,11 @@ class TADsPec
   end
 
   def self.ejecutar_test_suite claseATestear
-    instancia = claseATestear.new
-    TestInitializer.agregar_metodos_a_suite instancia
-    metodos = instancia.methods
+    metodos = claseATestear.new.methods
     metodos = metodos.select {|metodo| TADsPec.is_test? metodo}
     metodos.each {|metodo|
+      instancia = claseATestear.new
+      TestInitializer.agregar_metodos_a_suite instancia
       TADsPec.testear_metodo instancia, metodo }
   end
 
@@ -250,6 +244,9 @@ class Persona
   def get
     @edad
   end
+  def m
+    1
+  end
 end
 
 class Suit
@@ -259,6 +256,8 @@ class Suit
     #7.deberia ser menor_a 6
     7.deberia ser uno_de_estos [1,2,3,7]
     #7.deberia ser uno_de_estos [1,2,3]
+  end
+  def testear_que_so_vo
     a = Persona.new
     a.set 30
     a.deberia ser_viejo
@@ -268,6 +267,10 @@ class Suit
     Object.deberia entender :new
     a.deberia entender :set
     #a = bloq { 7 / 0 }
+    Persona.mockear(:m) do
+      2
+    end
+    a.m.deberia ser 2
 
     #a.deberia explotar_con ZeroDivisionError
   end

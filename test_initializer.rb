@@ -3,7 +3,6 @@ class TestInitializer
   protected
   def self.agregar_deberia
     Object.send(:define_method,:deberia) do |matcher|
-      #TADsPec.agregar_asercion_actual self.instance_exec(args[1], &args[0])
       matcher.match self
     end
   end
