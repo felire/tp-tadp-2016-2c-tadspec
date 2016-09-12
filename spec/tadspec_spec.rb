@@ -16,10 +16,8 @@ describe 'Metodos de Prueba' do
       end
     end
     instancia = Suite.new
-    TestInitializer.inicializar_tests
     TestInitializer.agregar_metodos_a_suite instancia
     expect(TADsPec.testear_metodo(instancia, :testear_que_es_7).paso_test?).to equal(true)
-    TestInitializer.finalizar_tests
   end
   it 'Deberia fallar el test' do
     class Suite
