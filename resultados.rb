@@ -37,9 +37,7 @@ class ResultadoTest #Resultado de un metodo test
   end
 end
 
-
 class ResultadoAssert
-
   attr_accessor :descripcion, :resultado, :excepcion
 
   # resultado: 1 paso, 2 fallo, 3 exploto
@@ -49,12 +47,15 @@ class ResultadoAssert
     puts @descripcion
     puts ' '
   end
+
   def paso?
     resultado == 1
   end
+
   def fallo?
     resultado == 2
   end
+
   def exploto?
     resultado == 3
   end
@@ -63,6 +64,7 @@ end
 
 class Ser
   attr_accessor :valorEsperado
+
   def initialize val
     @valorEsperado= val
   end
@@ -74,17 +76,17 @@ class Ser
       resultado = obj == valorEsperado
       if resultado
         puts 'El resultado fue el esperado'
-    else
-      puts 'Se esperaba '+valorEsperado.to_s+' pero se obtuvo '+obj.to_s
+      else
+        puts 'Se esperaba '+valorEsperado.to_s+' pero se obtuvo '+obj.to_s
       end
     end
     resultado
   end
-
 end
 
 class Mayor_a
   attr_accessor :valorEsperado
+
   def initialize valor
     @valorEsperado= valor
   end
@@ -102,6 +104,7 @@ end
 
 class Menor_a
   attr_accessor :valorEsperado
+
   def initialize valor
    @valorEsperado= valor
   end
@@ -119,6 +122,7 @@ end
 
 class Uno_de_estos
   attr_accessor :valoresEsperados
+
   def initialize val
     @valoresEsperados= val
   end
@@ -136,6 +140,7 @@ end
 
 class Ser_
     attr_accessor :metodo
+
   def initialize met
     @metodo= met
   end
@@ -153,6 +158,7 @@ end
 
 class Tener_
   attr_accessor :atributo, :matcher
+
   def initialize atributo, matcher
     @atributo= atributo
     @matcher= matcher
@@ -164,11 +170,9 @@ class Tener_
   end
 end
 
-
-
-
 class Entender
   attr_accessor :mensaje
+
   def initialize mensaje
     @mensaje= mensaje
   end
@@ -186,6 +190,7 @@ end
 
 class Explotar_con #Santi: nose testear esto asi que nose si esta bien
   attr_accessor :excepcion
+
   def initialize excepcion
     @excepcion = excepcion
   end

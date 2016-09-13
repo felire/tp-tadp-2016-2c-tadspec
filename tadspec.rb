@@ -1,23 +1,18 @@
 require './test_initializer.rb'
 require './resultados.rb'
 
-
-
 class Mock
-
   attr_accessor :clase, :metodo, :cuerpo
 
   def restaurar
     clase.send(:define_method, metodo, cuerpo)
   end
-
 end
 
 class TADsPec
 
   @@resultados_asserts = []
   @@mocks = []
-
 
   def self.is_suite? clase
     clase.instance_methods.any?{|me| is_test? me}
@@ -66,7 +61,6 @@ class TADsPec
       test.mensaje_fallo
     }
     return
-
   end
 
   def self.agregar_asercion_actual booleano
@@ -115,9 +109,10 @@ class TADsPec
     elsif((TADsPec.is_suite? args[0]) && args[1] == nil)
       self.ejecutar_test_suite args[0]
     elsif((TADsPec.is_suite? args[0]) && args[1] != nil)
-      instancia = args[0].new
       metodos = TADsPec.transformar_metodos_testear args[1..-1]
-      metodos.each{|metodo| TADsPec.testear_metodo instancia, metodo}
+      metodos.each{|metodo|
+        instancia = args[0].new
+        TADsPec.testear_metodo instancia, metodo}
     end
     #TADsPec.mostrar_resultado
     @@resultados_asserts = []

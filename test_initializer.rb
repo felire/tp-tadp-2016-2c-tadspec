@@ -1,7 +1,9 @@
-class Object  #Agrego metodos a object para testear
+class Object  # Agrego metodos a object para testear
+
   def deberia matcher
     matcher.match self
   end
+
   def mockear nombreMetodo,&bloque
     cuerpo = self.instance_method(nombreMetodo)
     TADsPec.agregar_mock self, nombreMetodo, cuerpo
@@ -9,24 +11,31 @@ class Object  #Agrego metodos a object para testear
       self.instance_exec(args,&bloque)
     end
   end
-    def mayor_a valor
-      Mayor_a.new valor
-    end
-    def menor_a valor
-      Menor_a.new valor
-    end
-    def uno_de_estos valor
-      Uno_de_estos.new valor
-    end
-    def ser valor
-      Ser.new valor
-    end
-    def entender mensaje
-      Entender.new mensaje
-    end
-    def explotar_con excepcion
-      Explotar_con.new excepcion
-    end
+
+  def mayor_a valor
+    Mayor_a.new valor
+  end
+
+  def menor_a valor
+    Menor_a.new valor
+  end
+
+  def uno_de_estos valor
+    Uno_de_estos.new valor
+  end
+
+  def ser valor
+    Ser.new valor
+  end
+
+  def entender mensaje
+    Entender.new mensaje
+  end
+
+  def explotar_con excepcion
+    Explotar_con.new excepcion
+  end
+
   def method_missing symbol,*args
     if(symbol.to_s.start_with? 'ser_')
       metodo = symbol.to_s[4..-1] +'?'
