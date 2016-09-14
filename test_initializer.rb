@@ -4,11 +4,11 @@ class Object  # Agrego metodos a object para testear
     matcher.match self
   end
 
-  def mockear nombreMetodo,&bloque
+  def mockear nombreMetodo, &bloque
     cuerpo = self.instance_method(nombreMetodo)
     TADsPec.agregar_mock self, nombreMetodo, cuerpo
     self.send(:define_method, nombreMetodo) do |*args|
-      self.instance_exec(args,&bloque)
+      self.instance_exec(args, &bloque)
     end
   end
 
@@ -34,6 +34,20 @@ class Object  # Agrego metodos a object para testear
 
   def explotar_con excepcion
     Explotar_con.new excepcion
+  end
+
+  def espiar objeto
+    objeto.send(:define_singleton_method, :metodos_usados) do
+      @metodos_usados
+    end
+    objeto.methods(true).each{ |metodo|
+        metodo_anterior = objeto.method(metodo)
+        objeto.send(:define_singleton_method, metodo) do |*args|
+        @metodos_usados = @metodos_usados + [metodo]
+        metodo_anterior.call(args)
+      end
+    }
+    objeto
   end
 
   def haber_recibido metodo

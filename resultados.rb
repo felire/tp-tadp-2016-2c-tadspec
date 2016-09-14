@@ -213,40 +213,26 @@ class Explotar_con #Santi: nose testear esto asi que nose si esta bien
 end
 
 class Haber_recibido
-  attr_accessor :objeto, :metodos_usados
+  attr_accessor :metodo, :veces
 
-  def initialize objeto
-    self.objeto= objeto
-    self.metodos_usados= []
+  def initialize metodo
+    metodo = metodo
+    @metodos_usados = []
   end
 
-  def add metodo
-    self.metodos_usados= self.metodos_usados + [metodo]
-  end
-
-  def modificar_metodo metodo
-    metodo_anterior = self.objeto.class.instance_method(metodo)
-    self.objeto.send(:define_singleton_method, metodo) do |*args|
-      self.add metodo
-      self.objeto.instance_exec(args,metodo_anterior)
-    end
-  end
-
-  def modificar_metodos
-    self.objeto.methods().each{ |metodo| self.modificar_metodo(metodo)}
+  def veces cantidad
+    veces= cantidad
   end
 
   def veces_utilizado metodo
-    veces = self.metodos_usados.select{|m| m == metodo}.size
-    veces
+    metodos_usados.select{|m| m == metodo}.size
   end
 
   def fue_utilizado metodo
-    (self.veces_utilizado (metodo))>0
+    (veces_utilizado (metodo))>0
   end
 
-  def match arg
-    self.modificar_metodos
-    if (self.fue_utilizado arg)
+  def match objeto
+    objeto.metodos_usados.include metodo
   end
 end

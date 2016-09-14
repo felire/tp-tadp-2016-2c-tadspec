@@ -130,8 +130,8 @@ class Persona
   def get
     @edad
   end
-  def m
-    1
+  def m var
+    puts var
   end
 end
 
@@ -163,10 +163,18 @@ class Suit
   end
 end
 
-def espiar objeto
+class Spy
 
-  objeto.send(:define_singleton_method, :haber_recibido) do |arg|
-    a = Haber_recibido.new objeto
-    a.match
+  def testear_que_anda
+    persona = Persona.new
+    persona = espiar(persona)
   end
 end
+
+#def espiar objeto
+
+ # objeto.send(:define_singleton_method, :haber_recibido) do |arg|
+  #  a = Haber_recibido.new objeto
+   # a.match
+  #end
+#end
