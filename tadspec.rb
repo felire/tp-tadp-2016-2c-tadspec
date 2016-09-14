@@ -9,10 +9,19 @@ class Mock
   end
 end
 
+class MetodoEspiado
+  attr_accessor :objeto, :metodo, :cuerpo
+
+  def resturar
+    objeto.send(:define_singleton_method, metodo, cuerpo)
+  end
+end
+
 class TADsPec
 
   @@resultados_asserts = []
   @@mocks = []
+  @@metodos_espiados = []
 
   def self.is_suite? clase
     clase.instance_methods.any?{|me| is_test? me}
@@ -65,6 +74,14 @@ class TADsPec
 
   def self.agregar_asercion_actual booleano
     @@resultadoMetodo.add booleano
+  end
+
+  def self.agregar_metodo_espiado objeto, metodo, cuerpo
+    met_espiado = MetodoEspiado.new
+    met_espiado.objeto= objeto
+    met_espiado.metodo= metodo
+    met_espiado.cuerpo= cuerpo
+    @@metodos_espiados = @@metodos_espiados+[met_espiado]
   end
 
   def self.agregar_mock clase, metodo, cuerpo

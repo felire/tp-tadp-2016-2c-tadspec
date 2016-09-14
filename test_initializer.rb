@@ -37,15 +37,12 @@ class Object  # Agrego metodos a object para testear
   end
 
   def espiar objeto
-    objeto.send(:define_singleton_method, :metodos_usados) do
-      @metodos_usados
-    end
-    objeto.methods(true).each{ |metodo|
+    objeto.methods().each{ |metodo|
         metodo_anterior = objeto.method(metodo)
         objeto.send(:define_singleton_method, metodo) do |*args|
-        @metodos_usados = @metodos_usados + [metodo]
-        metodo_anterior.call(args)
-      end
+          #TADsPec.agregar_metodo_espiado self, metodo, metodo_anterior
+          metodo_anterior.call(args)
+        end
     }
     objeto
   end
