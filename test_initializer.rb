@@ -36,6 +36,10 @@ class Object  # Agrego metodos a object para testear
     Explotar_con.new excepcion
   end
 
+  def haber_recibido metodo
+    Haber_recibido.new metodo
+  end
+
   def method_missing symbol,*args
     if(symbol.to_s.start_with? 'ser_')
       metodo = symbol.to_s[4..-1] +'?'

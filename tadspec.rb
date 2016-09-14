@@ -162,3 +162,11 @@ class Suit
     #a.deberia explotar_con ZeroDivisionError
   end
 end
+
+def espiar objeto
+
+  objeto.send(:define_singleton_method, :haber_recibido) do |arg|
+    a = Haber_recibido.new objeto
+    a.match
+  end
+end
