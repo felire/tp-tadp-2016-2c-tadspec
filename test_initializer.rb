@@ -1,5 +1,7 @@
 class Object  # Agrego metodos a object para testear
 
+  attr_accessor :haber_recibidos
+
   def deberia matcher
     matcher.match self
   end
@@ -36,15 +38,27 @@ class Object  # Agrego metodos a object para testear
     Explotar_con.new excepcion
   end
 
+  def encontrar_metodo metodo
+    self.haber_recibidos.detect{|haber| haber.metodo == metodo}
+  end
+
   def espiar objeto
+    objeto.haber_recibidos = []
     objeto.methods().each{ |metodo|
         metodo_anterior = objeto.method(metodo)
-        objeto.send(:define_singleton_method, metodo) do |*args|
-          #TADsPec.agregar_metodo_espiado self, metodo, metodo_anterior
+        haber = Haber_recibido.new metodo
+        objeto.haber_recibidos = objeto.haber_recibidos + [haber]
+        objeto.singleton_class.send(:define_method, metodo) do |*args|
+          TADsPec.agregar_metodo_espiado self, metodo, metodo_anterior
+          self.encontrar_metodo(metodo).aumentar_veces
           metodo_anterior.call(args)
         end
     }
     objeto
+  end
+
+  def veces_utilizadas metodo
+    self.encontrar_metodo(metodo).veces_usado
   end
 
   def haber_recibido metodo

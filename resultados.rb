@@ -213,26 +213,31 @@ class Explotar_con #Santi: nose testear esto asi que nose si esta bien
 end
 
 class Haber_recibido
-  attr_accessor :metodo, :veces
+  attr_accessor :metodo, :veces_usado, :args
 
   def initialize metodo
     metodo = metodo
-    @metodos_usados = []
+    veces_usado = 0
+    #args = args
+  end
+
+  def aumentar_veces
+    veces_usado = veces_usado+1
   end
 
   def veces cantidad
-    veces= cantidad
+    veces_usado == cantidad
   end
 
-  def veces_utilizado metodo
-    metodos_usados.select{|m| m == metodo}.size
-  end
+  def con_argumentos args
 
-  def fue_utilizado metodo
-    (veces_utilizado (metodo))>0
+    end
+=begin
+  def fue_utilizado
+    veces_usado>0
   end
-
+=end
   def match objeto
-    objeto.metodos_usados.include metodo
+    (objeto.veces_utilizadas (self.metodo))>0
   end
 end

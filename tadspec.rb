@@ -12,7 +12,7 @@ end
 class MetodoEspiado
   attr_accessor :objeto, :metodo, :cuerpo
 
-  def resturar
+  def restaurar
     objeto.send(:define_singleton_method, metodo, cuerpo)
   end
 end
@@ -182,6 +182,9 @@ end
 
 class Spy
 
+  class Persona
+    attr_accessor :edad
+  end
   def testear_que_anda
     persona = Persona.new
     persona = espiar(persona)
