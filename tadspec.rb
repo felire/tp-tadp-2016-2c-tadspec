@@ -109,6 +109,7 @@ class TADsPec
     instancia.send(metodo)
     @@resultados_asserts = @@resultados_asserts+[@@resultadoMetodo]
     TADsPec.borrar_mocks
+    @@metodos_espiados = []
     @@resultadoMetodo
   end
 
