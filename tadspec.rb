@@ -153,7 +153,12 @@ class Persona
   def m var
     self.a
     puts var
-  end
+    end
+
+    def metodin var1, var2
+      puts var1
+      puts var2
+    end
 end
 
 class Suit
@@ -190,7 +195,11 @@ class Spy
     persona = espiar(persona)
     persona.m 'holis'
     persona.m 'holis'
+    persona.metodin 'como', 'va'
     persona.deberia haber_recibido(:m).veces(2)
-    #persona.deberia haber_recibido(:a)
+    persona.deberia haber_recibido(:m).con_argumentos('holis')
+    persona.deberia haber_recibido(:metodin).con_argumentos('como', 'va')
+    persona.deberia haber_recibido(:a)
+    persona.deberia haber_recibido(:m)
   end
 end

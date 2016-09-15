@@ -216,26 +216,28 @@ class Haber_recibido
 
   def initialize metodo
     @metodo = metodo
-    @veces = nil
+    @cant_llamadas = nil
     @parametros = nil
   end
 
-  def con_parametros parametros
-    @parametros = parametros
+  def con_argumentos *parametros
+    @parametros = *parametros
+    return self
   end
 
   def veces cantidad
-    @cantidad = cantidad
+    @cant_llamadas = cantidad
+    return self
   end
 
   def match objeto
     @metodos_llamados = TADsPec.obtener_metodos objeto
-    if(@veces != nil)
-      @cantidad == (@metodos_llamados.select{|m| (m.metodo == @metodo) }).size
+    if(@cant_llamadas != nil)
+      puts @cant_llamadas == (@metodos_llamados.select{|m| (m.metodo == @metodo) }).size
     elsif(@parametros != nil)
-      @metodos_llamados.any?{|m| (m.metodo == @metodo) && (m.parametros == @parametros) }
+      puts @metodos_llamados.any?{|m| (m.metodo == @metodo) && (m.parametros == @parametros) }
     else
-      @metodos_llamados.any?{|m| m.metodo == @metodo }
+     puts @metodos_llamados.any?{|m| m.metodo == @metodo }
     end
   end
 end
