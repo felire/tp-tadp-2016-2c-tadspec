@@ -213,34 +213,29 @@ class Explotar_con #Santi: nose testear esto asi que nose si esta bien
 end
 
 class Haber_recibido
-  attr_accessor :metodo, :lista
 
   def initialize metodo
-    metodo = metodo
+    @metodo = metodo
+    @veces = nil
+    @parametros = nil
   end
 
   def con_parametros parametros
-
-  end
-
-  def veces_utilizado_metodo
-    (lista.select{|m| m.metodo == this.metodo}).size
-  end
-
-  def fue_utilizado_metodo
-    (veces_utilizado_metodo)>0
-  end
-
-  def obtener_metodos_espiados objeto
-    lista =TADsPec.obtener_metodos objeto
+    @parametros = parametros
   end
 
   def veces cantidad
-    cantidad == veces_utilizado_metodo
+    @cantidad = cantidad
   end
 
   def match objeto
-    obtener_metodos_espiados objeto
-    fue_utilizado_metodo
+    @metodos_llamados = TADsPec.obtener_metodos objeto
+    if(@veces != nil)
+      @cantidad == (@metodos_llamados.select{|m| (m.metodo == @metodo) }).size
+    elsif(@parametros != nil)
+      @metodos_llamados.any?{|m| (m.metodo == @metodo) && (m.parametros == @parametros) }
+    else
+      @metodos_llamados.any?{|m| m.metodo == @metodo }
+    end
   end
 end

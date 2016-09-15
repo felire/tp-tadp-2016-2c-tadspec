@@ -10,11 +10,7 @@ class Mock
 end
 
 class Metodo_espiado
-  attr_accessor :objeto, :metodo, :cuerpo, :parametros
-
-  def restaurar
-    objeto.send(:define_singleton_method, metodo, cuerpo)
-  end
+  attr_accessor :objeto, :metodo, :parametros
 end
 
 class TADsPec
@@ -76,25 +72,16 @@ class TADsPec
     @@resultadoMetodo.add booleano
   end
 
-  def self.mostrar_metodos_espiados
-    @@metodos_espiados.each{|metodoo| puts metodoo.metodo.to_s}
-  end
-
-  def self.agregar_metodo_espiado objeto, metodo, cuerpo, parametros
+  def self.agregar_metodo_espiado objeto, metodo, parametros
       met_espiado = Metodo_espiado.new
-      met_espiado.parametros = parametros
       met_espiado.objeto= objeto
       met_espiado.metodo= metodo
-      met_espiado.cuerpo= cuerpo
+      met_espiado.parametros= parametros
       @@metodos_espiados = @@metodos_espiados+[met_espiado]
   end
 
   def self.obtener_metodos obj
     @@metodos_espiados.select{|metodo| metodo.objeto == obj}
-  end
-
-  def self.fue_usado metodo,objeto
-    (self.veces_usado_metodo metodo, objeto)>0
   end
 
   def self.agregar_mock clase, metodo, cuerpo
@@ -202,6 +189,8 @@ class Spy
     persona = Persona.new
     persona = espiar(persona)
     persona.m 'holis'
+    persona.m 'holis'
+    persona.deberia haber_recibido(:m).veces(2)
     #persona.deberia haber_recibido(:a)
   end
 end

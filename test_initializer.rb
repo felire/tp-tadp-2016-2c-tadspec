@@ -39,16 +39,16 @@ class Object  # Agrego metodos a object para testear
   def espiar objeto
     objeto.methods().each{ |metodo|
       if (metodo.to_s == "method") || (metodo.to_s == "define_singleton_method") || (metodo.to_s == "__send__")
-      #no redefinimos estos metodos porque los usamos mas abajo
+      # no redefinimos estos metodos porque los usamos mas abajo y rompen
       else
         metodo_anterior = objeto.method(metodo)
         objeto.__send__(:define_singleton_method, metodo) do |*args|
-          TADsPec.agregar_metodo_espiado self, metodo, metodo_anterior, args
+          TADsPec.agregar_metodo_espiado self, metodo, args
           metodo_anterior.call(*args)
         end
       end
     }
-    objeto
+    return objeto
   end
 
   def haber_recibido metodo
@@ -72,15 +72,3 @@ class Object  # Agrego metodos a object para testear
     super(symbol, *args)
   end
 end
-
-=begin
-class Espiador
-  def initialize
-    @lista= []
-  end
-
-  def agregar_metodo metodo
-    @lista = @lista+[metodo]
-  end
-end
-=end
