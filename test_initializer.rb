@@ -1,7 +1,5 @@
 class Object  # Agrego metodos a object para testear
 
-  attr_accessor :haber_recibidos
-
   def deberia matcher
     matcher.match self
   end
@@ -38,27 +36,19 @@ class Object  # Agrego metodos a object para testear
     Explotar_con.new excepcion
   end
 
-  def encontrar_metodo metodo
-    self.haber_recibidos.detect{|haber| haber.metodo == metodo}
-  end
-
   def espiar objeto
-    objeto.haber_recibidos = []
     objeto.methods().each{ |metodo|
+      if (metodo.to_s == "method") || (metodo.to_s == "define_singleton_method") || (metodo.to_s == "__send__")
+      #no redefinimos estos metodos porque los usamos mas abajo
+      else
         metodo_anterior = objeto.method(metodo)
-        haber = Haber_recibido.new metodo
-        objeto.haber_recibidos = objeto.haber_recibidos + [haber]
-        objeto.singleton_class.send(:define_method, metodo) do |*args|
-          TADsPec.agregar_metodo_espiado self, metodo, metodo_anterior
-          self.encontrar_metodo(metodo).aumentar_veces
-          metodo_anterior.call(args)
+        objeto.__send__(:define_singleton_method, metodo) do |*args|
+          TADsPec.agregar_metodo_espiado self, metodo, metodo_anterior, args
+          metodo_anterior.call(*args)
         end
+      end
     }
     objeto
-  end
-
-  def veces_utilizadas metodo
-    self.encontrar_metodo(metodo).veces_usado
   end
 
   def haber_recibido metodo
@@ -82,3 +72,15 @@ class Object  # Agrego metodos a object para testear
     super(symbol, *args)
   end
 end
+
+=begin
+class Espiador
+  def initialize
+    @lista= []
+  end
+
+  def agregar_metodo metodo
+    @lista = @lista+[metodo]
+  end
+end
+=end

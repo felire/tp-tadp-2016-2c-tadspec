@@ -249,4 +249,4 @@ describe 'Metodos de Prueba' do
     expect(TADsPec.testear_metodo(instancia, :testear_que_testea_bien).paso_test?).to equal(true)
     TestInitializer.finalizar_tests
   end
-end
+  end

@@ -9,8 +9,8 @@ class Mock
   end
 end
 
-class MetodoEspiado
-  attr_accessor :objeto, :metodo, :cuerpo
+class Metodo_espiado
+  attr_accessor :objeto, :metodo, :cuerpo, :parametros
 
   def restaurar
     objeto.send(:define_singleton_method, metodo, cuerpo)
@@ -76,12 +76,25 @@ class TADsPec
     @@resultadoMetodo.add booleano
   end
 
-  def self.agregar_metodo_espiado objeto, metodo, cuerpo
-    met_espiado = MetodoEspiado.new
-    met_espiado.objeto= objeto
-    met_espiado.metodo= metodo
-    met_espiado.cuerpo= cuerpo
-    @@metodos_espiados = @@metodos_espiados+[met_espiado]
+  def self.mostrar_metodos_espiados
+    @@metodos_espiados.each{|metodoo| puts metodoo.metodo.to_s}
+  end
+
+  def self.agregar_metodo_espiado objeto, metodo, cuerpo, parametros
+      met_espiado = Metodo_espiado.new
+      met_espiado.parametros = parametros
+      met_espiado.objeto= objeto
+      met_espiado.metodo= metodo
+      met_espiado.cuerpo= cuerpo
+      @@metodos_espiados = @@metodos_espiados+[met_espiado]
+  end
+
+  def self.obtener_metodos obj
+    @@metodos_espiados.select{|metodo| metodo.objeto == obj}
+  end
+
+  def self.fue_usado metodo,objeto
+    (self.veces_usado_metodo metodo, objeto)>0
   end
 
   def self.agregar_mock clase, metodo, cuerpo
@@ -147,7 +160,11 @@ class Persona
   def get
     @edad
   end
+  def a
+    puts 'chau'
+  end
   def m var
+    self.a
     puts var
   end
 end
@@ -174,7 +191,6 @@ class Suit
     Persona.mockear(:m) do
       2
     end
-    a.m.deberia ser 2
 
     #a.deberia explotar_con ZeroDivisionError
   end
@@ -182,19 +198,10 @@ end
 
 class Spy
 
-  class Persona
-    attr_accessor :edad
-  end
   def testear_que_anda
     persona = Persona.new
     persona = espiar(persona)
+    persona.m 'holis'
+    #persona.deberia haber_recibido(:a)
   end
 end
-
-#def espiar objeto
-
- # objeto.send(:define_singleton_method, :haber_recibido) do |arg|
-  #  a = Haber_recibido.new objeto
-   # a.match
-  #end
-#end
