@@ -1,5 +1,6 @@
 require './test_initializer.rb'
 require './resultados.rb'
+require 'singleton'
 
 class Mock
   attr_accessor :clase, :metodo, :cuerpo
@@ -13,9 +14,10 @@ class Metodo_espiado
   attr_accessor :objeto, :metodo, :parametros
 end
 
+
+
 class TADsPec
 
-  @@resultados_asserts = []
   @@mocks = []
   @@metodos_espiados = []
 
@@ -37,36 +39,6 @@ class TADsPec
     return listaSuits
   end
 
-  def self.imprimir_lista_resultados
-    @@resultados_asserts.each { |a| a.imprimir_resultado_test}
-  end
-
-  def self.mostrar_resultado
-    cantidadCorridos = @@resultados_asserts.length
-    pasados = @@resultados_asserts.select {|test| test.paso_test?}
-    cantidadPasados= pasados.length
-    fallados = @@resultados_asserts.select{|test| test.fallo_test?}
-    cantidadFallados = fallados.length
-    explotados = @@resultados_asserts.select{|test| test.exploto_test?}
-    cantidadExplotados = explotados.length
-    puts 'Se corrieron '+ cantidadCorridos.to_s+ ' tests:'
-    puts 'Pasados: '+cantidadPasados.to_s
-    puts 'Fallados: '+cantidadFallados.to_s
-    puts 'Explotados: '+cantidadExplotados.to_s
-    puts ' '
-    puts 'Test Pasados con exito: '
-    pasados.each{|test| puts 'Nombre: '+ test.nombreTest.to_s}
-    puts ' '
-    puts 'Test Fallidos: '
-    fallados.each{|test|
-      puts 'Nombre: ' + test.nombreTest.to_s
-      puts ''
-      puts 'Descripcion falla: '
-      puts ' '
-      test.mensaje_fallo
-    }
-    return
-  end
 
   def self.agregar_asercion_actual booleano
     @@resultadoMetodo.add booleano
@@ -104,13 +76,12 @@ class TADsPec
   end
 
   def self.testear_metodo instancia, metodo
-    @@resultadoMetodo = ResultadoTest.new
-    @@resultadoMetodo.nombreTest= metodo
+    @@gestionador=Gestionador_resultados.instance
+    @@gestionador.nuevo_test metodo
     instancia.send(metodo)
-    @@resultados_asserts = @@resultados_asserts+[@@resultadoMetodo]
+    @@gestionador.fin_metodo
     TADsPec.borrar_mocks
     @@metodos_espiados = []
-    @@resultadoMetodo
   end
 
   def self.ejecutar_test_suite claseATestear
@@ -132,8 +103,7 @@ class TADsPec
         instancia = args[0].new
         TADsPec.testear_metodo instancia, metodo}
     end
-    #TADsPec.mostrar_resultado
-    @@resultados_asserts = []
+    Gestionador_resultados.instance.mostrar_resultados
     return
   end
 end
