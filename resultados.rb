@@ -19,11 +19,6 @@ class Assert_fallado<Resultado_assert
   end
 end
 
-class Assert_explotado<Resultado_assert
-  def paso?
-    return false
-  end
-end
 
 class Resultado_test
   attr_accessor :nombre, :asserts
@@ -38,33 +33,95 @@ class Resultado_test
   end
 
   def mostrar_resultados
+    puts nombre
     self.asserts.each{|assert|puts assert.descripcion}
+    puts ''
+  end
+
+  def paso?
+    return self.asserts.all?{|assert|assert.paso?}
+  end
+
+  def exploto?
+    return false
   end
 end
 
 
+class Resultado_test_explotado
+  attr_accessor :nombre, :error, :backtrace
+
+  def initialize metodo,excepcion
+    self.nombre= metodo.to_s
+    self.error= excepcion.message
+    self.backtrace=excepcion.backtrace.inspect
+  end
+  def mostrar_resultados
+    puts nombre
+    puts 'Excepcion: '+self.error
+    #EL BACKTRACE ES LARGO, SI QUERES DESCOMENTALO
+    # puts 'Backtrace: '+self.backtrace
+    puts ''
+  end
+
+  def paso?
+    return false
+  end
+
+  def exploto?
+    true
+  end
+end
+
 class Gestionador_resultados
   include Singleton
-  attr_accessor :tests, :testActual
+  attr_accessor :tests, :asserts_test
 
   def initialize
     self.tests=[]
+    self.asserts_test=[]
   end
 
-  def nuevo_test metodo
-    self.testActual= Resultado_test.new metodo
+  def fin_metodo metodo
+    @test_actual=Resultado_test.new metodo
+    self.asserts_test.each { |assert| @test_actual.agregar_assert assert }
+    self.tests= self.tests + [@test_actual]
   end
 
-  def fin_metodo
-    self.tests= self.tests + [self.testActual]
+  def test_explotado metodo,excepcion
+    puts 'entre'
+    @test_explotado=Resultado_test_explotado.new metodo,excepcion
+    self.tests= self.tests + [@test_explotado]
   end
 
   def agregar_assert resultado
-    self.testActual.agregar_assert resultado
+    self.asserts_test = self.asserts_test + [resultado]
+  end
+
+  def test_pasados
+    return self.tests.select {|test| test.paso?}
+  end
+
+  def test_fallados
+    return self.tests.select{|test| !(test.paso?)&& !(test.exploto?)}
+  end
+
+  def test_explotados
+    return self.tests.select {|test| test.exploto?}
   end
 
   def mostrar_resultados
-    self.tests.each{|test|test.mostrar_resultados}
+    puts 'Total tests corridos: '+ self.tests.size.to_s
+    puts 'Total tests pasados: '+self.test_pasados.size.to_s
+    puts 'Total tests fallados: '+self.test_fallados.size.to_s
+    puts 'Total tests explotados: '+self.test_explotados.size.to_s,''
+    puts 'Tests pasados:'
+    self.test_pasados.each{|test| test.mostrar_resultados}
+    puts '','Tests fallados:'
+    self.test_fallados.each{|test| test.mostrar_resultados}
+    puts '','Tests explotados:'
+    self.test_explotados.each{|test| test.mostrar_resultados}
+    self.tests=[]
   end
 end
 
@@ -83,7 +140,7 @@ class Ser
     else
       if obj == valorEsperado
         @resultado=Assert_pasado.new
-        @resultado.descripcion='El resultado fue el esperado'
+        @resultado.descripcion='El resultado fue el esperado: ' + valorEsperado.to_s+ ' es '+ obj.to_s
         Gestionador_resultados.instance.agregar_assert @resultado
       else
         @resultado=Assert_fallado.new
@@ -104,7 +161,7 @@ class Mayor_a
   def match obj
     if obj > valorEsperado
       @resultado=Assert_pasado.new
-      @resultado.descripcion='El resultado fue el esperado'
+      @resultado.descripcion='El resultado fue el esperado: '+obj.to_s+' es mayor a '+ valorEsperado.to_s
       Gestionador_resultados.instance.agregar_assert @resultado
     else
       @resultado=Assert_fallado.new
@@ -124,7 +181,7 @@ class Menor_a
   def match obj
     if obj < valorEsperado
       @resultado=Assert_pasado.new
-      @resultado.descripcion='El resultado fue el esperado'
+      @resultado.descripcion='El resultado fue el esperado: '+obj.to_s+' es menor a '+ valorEsperado.to_s
       Gestionador_resultados.instance.agregar_assert @resultado
     else
       @resultado=Assert_fallado.new
@@ -144,7 +201,7 @@ class Uno_de_estos
   def match obj
     if valoresEsperados.include? obj
       @resultado=Assert_pasado.new
-      @resultado.descripcion='El resultado fue el esperado'
+      @resultado.descripcion='El resultado fue el esperado: '+obj.to_s+' es uno de '+valoresEsperados.to_s
       Gestionador_resultados.instance.agregar_assert @resultado
     else
       @resultado=Assert_fallado.new
@@ -164,7 +221,7 @@ class Ser_
   def match obj
     if obj.send(metodo)
       @resultado=Assert_pasado.new
-      @resultado.descripcion='El resultado fue el esperado'
+      @resultado.descripcion='El resultado fue el esperado: '+obj.class.to_s+' es '+metodo.to_s[0...-1]
       Gestionador_resultados.instance.agregar_assert @resultado
     else
       @resultado=Assert_fallado.new
@@ -198,7 +255,7 @@ class Entender
   def match obj
    if obj.respond_to? mensaje
       @resultado=Assert_pasado.new
-      @resultado.descripcion='El resultado fue el esperado'
+      @resultado.descripcion='El resultado fue el esperado: '+ obj.class.to_s+' entiende el mensaje '+mensaje.to_s
       Gestionador_resultados.instance.agregar_assert @resultado
     else
       @resultado=Assert_fallado.new
@@ -221,7 +278,7 @@ class Explotar_con #Santi: nose testear esto asi que nose si esta bien
     rescue Exception=>e
       if e.class == excepcion
         @resultado=Assert_pasado.new
-        @resultado.descripcion='El resultado fue el esperado'
+        @resultado.descripcion='El resultado fue el esperado: '+obj.class.to_s+' lanzo la excepcion '+excepcion.to_s
         Gestionador_resultados.instance.agregar_assert @resultado
       else
         @resultado=Assert_fallado.new
