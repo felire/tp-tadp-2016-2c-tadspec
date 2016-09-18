@@ -32,9 +32,17 @@ class Resultado_test
     self.asserts= self.asserts+[resultado]
   end
 
+  def assert_fallidos
+    self.asserts.select{|assert| !assert.paso?}
+  end
+
+  def mostrar_nombre
+    puts nombre
+  end
+
   def mostrar_resultados
     puts nombre
-    self.asserts.each{|assert|puts assert.descripcion}
+    self.assert_fallidos.each{|assert|puts assert.descripcion}
     puts ''
   end
 
@@ -82,8 +90,11 @@ class Gestionador_resultados
     self.asserts_test=[]
   end
 
-  def fin_metodo metodo
-    @test_actual=Resultado_test.new metodo
+  def nuevo_test metodo
+       @test_actual= Resultado_test.new metodo
+  end
+
+  def fin_metodo
     self.asserts_test.each { |assert| @test_actual.agregar_assert assert }
     self.tests= self.tests + [@test_actual]
   end
@@ -116,7 +127,7 @@ class Gestionador_resultados
     puts 'Total tests fallados: '+self.test_fallados.size.to_s
     puts 'Total tests explotados: '+self.test_explotados.size.to_s,''
     puts 'Tests pasados:'
-    self.test_pasados.each{|test| test.mostrar_resultados}
+    self.test_pasados.each{|test| test.mostrar_nombre}
     puts '','Tests fallados:'
     self.test_fallados.each{|test| test.mostrar_resultados}
     puts '','Tests explotados:'
