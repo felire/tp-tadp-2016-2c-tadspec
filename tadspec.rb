@@ -1,6 +1,5 @@
 require './test_initializer.rb'
 require './resultados.rb'
-require 'singleton'
 
 class Mock
   attr_accessor :clase, :metodo, :cuerpo
