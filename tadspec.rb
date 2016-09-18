@@ -176,9 +176,9 @@ class Spy
     persona.m 'holis'
     persona.metodin 'como', 'va'
     persona.deberia haber_recibido(:m).veces(2)
-    persona.deberia haber_recibido(:m).con_argumentos('holis')
+    persona.deberia haber_recibido(:m).con_argumentos('holis','merlusa')
     persona.deberia haber_recibido(:metodin).con_argumentos('como', 'va')
-    persona.deberia haber_recibido(:a)
+    persona.deberia haber_recibido(:s)
     persona.deberia haber_recibido(:m)
   end
 end

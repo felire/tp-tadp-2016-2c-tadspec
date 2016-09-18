@@ -32,9 +32,17 @@ class Resultado_test
     self.asserts= self.asserts+[resultado]
   end
 
+  def mostrar_nombre
+    puts nombre
+  end
+
+  def assert_fallidos
+    self.asserts.select{|assert| !assert.paso?}
+  end
+
   def mostrar_resultados
     puts nombre
-    self.asserts.each{|assert|puts assert.descripcion}
+    self.assert_fallidos.each{|assert|puts assert.descripcion}
     puts ''
   end
 
@@ -60,7 +68,7 @@ class Resultado_test_explotado
     puts nombre
     puts 'Excepcion: '+self.error
     #EL BACKTRACE ES LARGO, SI QUERES DESCOMENTALO
-    # puts 'Backtrace: '+self.backtrace
+    puts 'Backtrace: '+self.backtrace
     puts ''
   end
 
@@ -115,7 +123,7 @@ class Gestionador_resultados
     puts 'Total tests fallados: '+self.test_fallados.size.to_s
     puts 'Total tests explotados: '+self.test_explotados.size.to_s,''
     puts 'Tests pasados:'
-    self.test_pasados.each{|test| test.mostrar_resultados}
+    self.test_pasados.each{|test| test.mostrar_nombre}
     puts '','Tests fallados:'
     self.test_fallados.each{|test| test.mostrar_resultados}
     puts '','Tests explotados:'
@@ -224,7 +232,7 @@ class Ser_
       Gestionador_resultados.instance.agregar_assert @resultado
     else
       @resultado=Assert_fallado.new
-      @resultado.descripcion= 'El objeto '+obj.class.to_s+' no es '+metodo.to_s[0...-1]
+      @resultado.descripcion= 'El objeto '+obj.class.to_s+' no es :'+metodo.to_s[0...-1]
       Gestionador_resultados.instance.agregar_assert @resultado
     end
   end
@@ -254,11 +262,11 @@ class Entender
   def match obj
     if obj.respond_to? mensaje
       @resultado=Assert_pasado.new
-      @resultado.descripcion='El resultado fue el esperado: '+ obj.class.to_s+' entiende el mensaje '+mensaje.to_s
+      @resultado.descripcion='El resultado fue el esperado: '+ obj.class.to_s+' entiende el mensaje :'+mensaje.to_s
       Gestionador_resultados.instance.agregar_assert @resultado
     else
       @resultado=Assert_fallado.new
-      @resultado.descripcion= 'El objeto '+obj.class.to_s+' no entendio el mensaje '+mensaje.to_s
+      @resultado.descripcion= 'El objeto '+obj.class.to_s+' no entendio el mensaje :'+mensaje.to_s
       Gestionador_resultados.instance.agregar_assert @resultado
     end
   end
@@ -312,11 +320,35 @@ class Haber_recibido
   def match objeto
     @metodos_llamados = TADsPec.obtener_metodos objeto
     if(@cant_llamadas != nil)
-      puts @cant_llamadas == (@metodos_llamados.select{|m| (m.metodo == @metodo) }).size
+      llamadas_reales = (@metodos_llamados.select{|m| (m.metodo == @metodo) }).size
+      if(@cant_llamadas == (llamadas_reales))
+        resultado = Assert_pasado.new
+        Gestionador_resultados.instance.agregar_assert resultado
+      else
+        resultado = Assert_fallado.new
+        resultado.descripcion = 'Se esperaba que el metodo :'+@metodo.to_s+' se haya llamado '+@cant_llamadas.to_s+' pero se llamo '+llamadas_reales.to_s+' veces'
+        Gestionador_resultados.instance.agregar_assert resultado
+      end
     elsif(@parametros != nil)
-      puts @metodos_llamados.any?{|m| (m.metodo == @metodo) && (m.parametros == @parametros) }
+      metodosRepetidos = @metodos_llamados.select {|m| (m.metodo == @metodo)}
+      if(metodosRepetidos.any?{|m| (m.parametros == @parametros) })
+        resultado = Assert_pasado.new
+        Gestionador_resultados.instance.agregar_assert resultado
+      else
+        resultado = Assert_fallado.new
+        resultado.descripcion = 'Se esperaba que el metodo :'+@metodo.to_s+' se haya llamado con estos argumentos '+@parametros.to_s+' pero se llamo con estos: '+"\n"
+        metodosRepetidos.each {|metodo| resultado.descripcion = resultado.descripcion+ metodo.parametros.to_s + "\n"}
+        Gestionador_resultados.instance.agregar_assert resultado
+      end
     else
-      puts @metodos_llamados.any?{|m| m.metodo == @metodo }
+      if(@metodos_llamados.any?{|m| m.metodo == @metodo })
+        resultado = Assert_pasado.new
+        Gestionador_resultados.instance.agregar_assert resultado
+      else
+        resultado = Assert_fallado.new
+        resultado.descripcion = 'Se esperaba que el metodo :' + @metodo.to_s+' fuera llamado por el objeto ' + objeto.class.to_s + ' pero no lo fue.'
+        Gestionador_resultados.instance.agregar_assert resultado
+      end
     end
   end
 end
