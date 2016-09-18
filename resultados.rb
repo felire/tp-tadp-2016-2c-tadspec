@@ -32,17 +32,9 @@ class Resultado_test
     self.asserts= self.asserts+[resultado]
   end
 
-  def assert_fallidos
-    self.asserts.select{|assert| !assert.paso?}
-  end
-
-  def mostrar_nombre
-    puts nombre
-  end
-
   def mostrar_resultados
     puts nombre
-    self.assert_fallidos.each{|assert|puts assert.descripcion}
+    self.asserts.each{|assert|puts assert.descripcion}
     puts ''
   end
 
@@ -90,17 +82,13 @@ class Gestionador_resultados
     self.asserts_test=[]
   end
 
-  def nuevo_test metodo
-       @test_actual= Resultado_test.new metodo
-  end
-
-  def fin_metodo
+  def fin_metodo metodo
+    @test_actual=Resultado_test.new metodo
     self.asserts_test.each { |assert| @test_actual.agregar_assert assert }
     self.tests= self.tests + [@test_actual]
   end
 
   def test_explotado metodo,excepcion
-    puts 'entre'
     @test_explotado=Resultado_test_explotado.new metodo,excepcion
     self.tests= self.tests + [@test_explotado]
   end
@@ -127,7 +115,7 @@ class Gestionador_resultados
     puts 'Total tests fallados: '+self.test_fallados.size.to_s
     puts 'Total tests explotados: '+self.test_explotados.size.to_s,''
     puts 'Tests pasados:'
-    self.test_pasados.each{|test| test.mostrar_nombre}
+    self.test_pasados.each{|test| test.mostrar_resultados}
     puts '','Tests fallados:'
     self.test_fallados.each{|test| test.mostrar_resultados}
     puts '','Tests explotados:'
@@ -186,7 +174,7 @@ class Menor_a
   attr_accessor :valorEsperado
 
   def initialize valor
-   @valorEsperado= valor
+    @valorEsperado= valor
   end
 
   def match obj
@@ -223,7 +211,7 @@ class Uno_de_estos
 end
 
 class Ser_
-    attr_accessor :metodo
+  attr_accessor :metodo
 
   def initialize met
     @metodo= met
@@ -264,7 +252,7 @@ class Entender
   end
 
   def match obj
-   if obj.respond_to? mensaje
+    if obj.respond_to? mensaje
       @resultado=Assert_pasado.new
       @resultado.descripcion='El resultado fue el esperado: '+ obj.class.to_s+' entiende el mensaje '+mensaje.to_s
       Gestionador_resultados.instance.agregar_assert @resultado
@@ -328,7 +316,7 @@ class Haber_recibido
     elsif(@parametros != nil)
       puts @metodos_llamados.any?{|m| (m.metodo == @metodo) && (m.parametros == @parametros) }
     else
-     puts @metodos_llamados.any?{|m| m.metodo == @metodo }
+      puts @metodos_llamados.any?{|m| m.metodo == @metodo }
     end
   end
 end

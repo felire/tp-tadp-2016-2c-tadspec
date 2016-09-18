@@ -45,11 +45,11 @@ class TADsPec
   end
 
   def self.agregar_metodo_espiado objeto, metodo, parametros
-      met_espiado = Metodo_espiado.new
-      met_espiado.objeto= objeto
-      met_espiado.metodo= metodo
-      met_espiado.parametros= parametros
-      @@metodos_espiados = @@metodos_espiados+[met_espiado]
+    met_espiado = Metodo_espiado.new
+    met_espiado.objeto= objeto
+    met_espiado.metodo= metodo
+    met_espiado.parametros= parametros
+    @@metodos_espiados = @@metodos_espiados+[met_espiado]
   end
 
   def self.obtener_metodos obj
@@ -76,10 +76,13 @@ class TADsPec
   end
 
   def self.testear_metodo instancia, metodo
-    @@gestionador=Gestionador_resultados.instance
-    @@gestionador.nuevo_test metodo
-    instancia.send(metodo)
-    @@gestionador.fin_metodo
+    begin
+      instancia.send(metodo)
+      Gestionador_resultados.instance.fin_metodo metodo
+    rescue Exception=>e
+      Gestionador_resultados.instance.test_explotado metodo,e
+    end
+
     TADsPec.borrar_mocks
     @@metodos_espiados = []
   end
@@ -124,12 +127,12 @@ class Persona
   def m var
     self.a
     puts var
-    end
+  end
 
-    def metodin var1, var2
-      puts var1
-      puts var2
-    end
+  def metodin var1, var2
+    puts var1
+    puts var2
+  end
 end
 
 class Suit
@@ -139,6 +142,7 @@ class Suit
     #7.deberia ser menor_a 6
     7.deberia ser uno_de_estos [1,2,3,7]
     8.deberia ser menor_a 11
+    7.deberia ser mayor_a 5
     #7.deberia ser uno_de_estos [1,2,3]
   end
   def testear_que_so_vo
@@ -154,9 +158,13 @@ class Suit
     Persona.mockear(:m) do
       2
     end
-
     #a.deberia explotar_con ZeroDivisionError
   end
+
+  def testear_que_explota
+    7/0
+  end
+
 end
 
 class Spy
