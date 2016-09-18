@@ -10,10 +10,10 @@ class Mock
   end
 end
 
+
 class Metodo_espiado
   attr_accessor :objeto, :metodo, :parametros
 end
-
 
 
 class TADsPec
@@ -34,14 +34,8 @@ class TADsPec
     ObjectSpace.each_object(Class).each do |valor|
       clases = clases + [valor]
     end
-    listaSuitsYSingletons = clases.select {|clase| TADsPec.is_suite? clase}
-    listaSuits = listaSuitsYSingletons.select {|clase| !(clase.to_s.start_with? '#')} #sacamos a las singletons
+    listaSuits = clases.select {|clase| TADsPec.is_suite? clase}
     return listaSuits
-  end
-
-
-  def self.agregar_asercion_actual booleano
-    @@resultadoMetodo.add booleano
   end
 
   def self.agregar_metodo_espiado objeto, metodo, parametros
@@ -52,7 +46,7 @@ class TADsPec
     @@metodos_espiados = @@metodos_espiados+[met_espiado]
   end
 
-  def self.obtener_metodos obj
+  def self.obtener_metodos_espiados obj
     @@metodos_espiados.select{|metodo| metodo.objeto == obj}
   end
 

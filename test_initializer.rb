@@ -63,11 +63,11 @@ class Object  # Agrego metodos a object para testear
     if(symbol.to_s.start_with? 'tener_')
       atributo = '@' + symbol.to_s[6..-1]
       if args[0].respond_to? :match
-        return Tener_.new atributo, args[0]
+        matcher = args[0]
       else
         matcher = Ser.new args[0]
-        return Tener_.new atributo, matcher
       end
+      return Tener_.new atributo, matcher
     end
     super(symbol, *args)
   end

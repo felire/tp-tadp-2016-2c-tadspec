@@ -321,7 +321,7 @@ class Haber_recibido
   end
 
   def match objeto
-    @metodos_llamados = TADsPec.obtener_metodos objeto
+    @metodos_llamados = TADsPec.obtener_metodos_espiados objeto
     if(@cant_llamadas != nil)
       llamadas_reales = (@metodos_llamados.select{|m| (m.metodo == @metodo) }).size
       if(@cant_llamadas == (llamadas_reales))
