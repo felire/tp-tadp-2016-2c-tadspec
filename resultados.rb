@@ -93,12 +93,15 @@ class Gestionador_resultados
   def fin_metodo metodo
     @test_actual=Resultado_test.new metodo
     self.asserts_test.each { |assert| @test_actual.agregar_assert assert }
+    self.asserts_test =[]
     self.tests= self.tests + [@test_actual]
+    return @test_actual.paso?
   end
 
   def test_explotado metodo,excepcion
     @test_explotado=Resultado_test_explotado.new metodo,excepcion
     self.tests= self.tests + [@test_explotado]
+    return @test_explotado.paso?
   end
 
   def agregar_assert resultado
@@ -129,6 +132,7 @@ class Gestionador_resultados
     puts '','Tests explotados:'
     self.test_explotados.each{|test| test.mostrar_resultados}
     self.tests=[]
+    self.asserts_test =[]
   end
 end
 
@@ -272,7 +276,7 @@ class Entender
   end
 end
 
-class Explotar_con #Santi: nose testear esto asi que nose si esta bien
+class Explotar_con
   attr_accessor :excepcion
 
   def initialize excepcion
@@ -282,10 +286,12 @@ class Explotar_con #Santi: nose testear esto asi que nose si esta bien
   def match obj
     begin
       obj.call
+      @resultado=Assert_fallado.new
+      @resultado.descripcion= 'El objeto '+obj.class.to_s+' no lanzo la excepcion '+excepcion.to_s + ', ni siquiera lanzo excepcion!'
+      Gestionador_resultados.instance.agregar_assert @resultado
     rescue Exception=>e
       if e.class == excepcion
         @resultado=Assert_pasado.new
-        @resultado.descripcion='El resultado fue el esperado: '+obj.class.to_s+' lanzo la excepcion '+excepcion.to_s
         Gestionador_resultados.instance.agregar_assert @resultado
       else
         @resultado=Assert_fallado.new
@@ -293,9 +299,6 @@ class Explotar_con #Santi: nose testear esto asi que nose si esta bien
         Gestionador_resultados.instance.agregar_assert @resultado
       end
     end
-    @resultado=Assert_fallado.new
-    @resultado.descripcion= 'El objeto '+obj.class.to_s+' no lanzo la excepcion '+excepcion.to_s
-    Gestionador_resultados.instance.agregar_assert @resultado
   end
 end
 

@@ -78,13 +78,12 @@ class TADsPec
   def self.testear_metodo instancia, metodo
     begin
       instancia.send(metodo)
+      TADsPec.borrar_mocks
+      @@metodos_espiados = []
       Gestionador_resultados.instance.fin_metodo metodo
     rescue Exception=>e
       Gestionador_resultados.instance.test_explotado metodo,e
     end
-
-    TADsPec.borrar_mocks
-    @@metodos_espiados = []
   end
 
   def self.ejecutar_test_suite claseATestear
@@ -135,6 +134,13 @@ class Persona
   end
 end
 
+class Prueba
+  def testear_que_extranio
+    a = Persona.new
+    a.set 22
+    a.deberia tener_edad mayor_a 21
+  end
+end
 class Suit
 
   def testear_que_soy_yo
@@ -145,6 +151,10 @@ class Suit
     7.deberia ser mayor_a 5
     #7.deberia ser uno_de_estos [1,2,3]
   end
+
+
+
+
   def testear_que_so_vo
     a = Persona.new
     a.set 11
@@ -180,5 +190,11 @@ class Spy
     persona.deberia haber_recibido(:metodin).con_argumentos('como', 'va')
     persona.deberia haber_recibido(:s)
     persona.deberia haber_recibido(:m)
+  end
+end
+
+class Asd
+  def testear_que_es_7
+    7.deberia ser 7
   end
 end

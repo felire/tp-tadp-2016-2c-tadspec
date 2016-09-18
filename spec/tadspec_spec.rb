@@ -1,6 +1,7 @@
 require 'rspec'
 require './tadspec.rb'
 describe 'Metodos de Prueba' do
+
   it 'Deberia ser suit' do
     class Suite
     def testear_que_dice_bien
@@ -9,6 +10,7 @@ describe 'Metodos de Prueba' do
     end
     expect(TADsPec.is_suite? Suite).to equal(true)
   end
+
   it 'Deberia pasar el test' do
     class Suite
       def testear_que_es_7
@@ -16,9 +18,10 @@ describe 'Metodos de Prueba' do
       end
     end
     instancia = Suite.new
-    TestInitializer.agregar_metodos_a_suite instancia
-    expect(TADsPec.testear_metodo(instancia, :testear_que_es_7).paso_test?).to equal(true)
+    expect(TADsPec.testear_metodo instancia, :testear_que_es_7).to equal(true)
   end
+
+
   it 'Deberia fallar el test' do
     class Suite
       def testear_que_2_mayor_a_3
@@ -28,11 +31,10 @@ describe 'Metodos de Prueba' do
       end
     end
     instancia = Suite.new
-    TestInitializer.inicializar_tests
-    TestInitializer.agregar_metodos_a_suite instancia
-    expect(TADsPec.testear_metodo(instancia, :testear_que_2_mayor_a_3).paso_test?).to equal(false)
-    TestInitializer.finalizar_tests
+    expect(TADsPec.testear_metodo instancia, :testear_que_2_mayor_a_3).to equal(false)
   end
+
+
   it 'Deberia pasar el test' do
     class Suite
       def testear_que_2_menor_a_3
@@ -42,11 +44,10 @@ describe 'Metodos de Prueba' do
       end
     end
     instancia = Suite.new
-    TestInitializer.inicializar_tests
-    TestInitializer.agregar_metodos_a_suite instancia
-    expect(TADsPec.testear_metodo(instancia, :testear_que_2_menor_a_3).paso_test?).to equal(false)
-    TestInitializer.finalizar_tests
+    expect(TADsPec.testear_metodo instancia, :testear_que_2_menor_a_3).to equal(false)
   end
+
+
   it 'Deberia ser uno de esos' do
     class Ser_o_no_ser
       def testear_que_true
@@ -54,11 +55,10 @@ describe 'Metodos de Prueba' do
       end
     end
     instancia = Ser_o_no_ser.new
-    TestInitializer.inicializar_tests
-    TestInitializer.agregar_metodos_a_suite instancia
-    expect(TADsPec.testear_metodo(instancia, :testear_que_true).paso_test?).to equal(true)
-    TestInitializer.finalizar_tests
+    expect(TADsPec.testear_metodo instancia, :testear_que_true).to equal(true)
   end
+
+
   it 'No deberia ser uno de esos' do
     class Ser_o_no_ser
       def testear_que_true
@@ -66,11 +66,9 @@ describe 'Metodos de Prueba' do
       end
     end
     instancia = Ser_o_no_ser.new
-    TestInitializer.inicializar_tests
-    TestInitializer.agregar_metodos_a_suite instancia
-    expect(TADsPec.testear_metodo(instancia, :testear_que_true).paso_test?).to equal(false)
-    TestInitializer.finalizar_tests
+    expect(TADsPec.testear_metodo instancia, :testear_que_true).to equal(false)
   end
+
   it 'Deberia ser todo' do
     class Persona
       @edad
@@ -105,11 +103,10 @@ describe 'Metodos de Prueba' do
       end
     end
     instancia = SuitePrueba.new
-    TestInitializer.inicializar_tests
-    TestInitializer.agregar_metodos_a_suite instancia
-    expect(TADsPec.testear_metodo(instancia, :testear_que_holis).paso_test?).to equal(true)
-    TestInitializer.finalizar_tests
+    expect(TADsPec.testear_metodo instancia, :testear_que_holis).to equal(true)
   end
+
+
   it 'No deberia ser todo' do
     class Persona
       @edad
@@ -144,11 +141,10 @@ describe 'Metodos de Prueba' do
       end
     end
     instancia = SuitePrueba.new
-    TestInitializer.inicializar_tests
-    TestInitializer.agregar_metodos_a_suite instancia
-    expect(TADsPec.testear_metodo(instancia, :testear_que_holis).paso_test?).to equal(false)
-    TestInitializer.finalizar_tests
+    expect(TADsPec.testear_metodo instancia, :testear_que_holis).to equal(false)
   end
+
+
   it 'Deberia entender' do
     class SuitePrueba
 
@@ -157,10 +153,7 @@ describe 'Metodos de Prueba' do
       end
     end
     instancia = SuitePrueba.new
-    TestInitializer.inicializar_tests
-    TestInitializer.agregar_metodos_a_suite instancia
-    expect(TADsPec.testear_metodo(instancia, :testear_que_entiende_new).paso_test?).to equal(true)
-    TestInitializer.finalizar_tests
+    expect(TADsPec.testear_metodo instancia, :testear_que_entiende_new).to equal(true)
   end
   it 'No deberia entender' do
     class SuitePrueba
@@ -170,11 +163,10 @@ describe 'Metodos de Prueba' do
       end
     end
     instancia = SuitePrueba.new
-    TestInitializer.inicializar_tests
-    TestInitializer.agregar_metodos_a_suite instancia
-    expect(TADsPec.testear_metodo(instancia, :testear_que_no_entiende_new).paso_test?).to equal(false)
-    TestInitializer.finalizar_tests
+    expect(TADsPec.testear_metodo instancia, :testear_que_no_entiende_new).to equal(false)
   end
+
+
   it 'Deberia Explotar' do
     class SuitePrueba
 
@@ -184,11 +176,10 @@ describe 'Metodos de Prueba' do
       end
     end
     instancia = SuitePrueba.new
-    TestInitializer.inicializar_tests
-    TestInitializer.agregar_metodos_a_suite instancia
-    expect(TADsPec.testear_metodo(instancia, :testear_que_explota).paso_test?).to equal(true)
-    TestInitializer.finalizar_tests
+    expect(TADsPec.testear_metodo instancia, :testear_que_explota).to equal(true)
   end
+
+
   it 'No deberia Explotar' do
     class SuitePrueba2
 
@@ -198,10 +189,7 @@ describe 'Metodos de Prueba' do
       end
     end
     instancia = SuitePrueba2.new
-    TestInitializer.inicializar_tests
-    TestInitializer.agregar_metodos_a_suite instancia
-    expect(TADsPec.testear_metodo(instancia, :testear_que_no_explota).paso_test?).to equal(false)
-    TestInitializer.finalizar_tests
+    expect(TADsPec.testear_metodo instancia, :testear_que_no_explota).to equal(false)
   end
 
   it 'Deberia estar mockeada' do
@@ -221,11 +209,9 @@ describe 'Metodos de Prueba' do
       end
 
     instancia = SuiteMock.new
-    TestInitializer.inicializar_tests
-    TestInitializer.agregar_metodos_a_suite instancia
-    expect(TADsPec.testear_metodo(instancia, :testear_que_mockea).paso_test?).to equal(true)
-    TestInitializer.finalizar_tests
+    expect(TADsPec.testear_metodo instancia, :testear_que_mockea).to equal(true)
   end
+
 
   it 'Deberia testearnos a nosotros' do
     class Prueba
@@ -237,16 +223,11 @@ describe 'Metodos de Prueba' do
     class Testeador
       def testear_que_testea_bien
       instancia = Prueba.new
-      TestInitializer.inicializar_tests
-      TestInitializer.agregar_metodos_a_suite instancia
-      TADsPec.testear_metodo(instancia, :testear_que_true).paso_test?.deberia ser true
-
+      (TADsPec.testear_metodo instancia, :testear_que_true).deberia ser true
       end
     end
     instancia = Testeador.new
-    TestInitializer.inicializar_tests
-    TestInitializer.agregar_metodos_a_suite instancia
-    expect(TADsPec.testear_metodo(instancia, :testear_que_testea_bien).paso_test?).to equal(true)
-    TestInitializer.finalizar_tests
+    expect(TADsPec.testear_metodo instancia, :testear_que_testea_bien).to equal(true)
   end
+
   end
