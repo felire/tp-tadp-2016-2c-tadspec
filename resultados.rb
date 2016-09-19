@@ -212,11 +212,11 @@ class Uno_de_estos
   def match obj
     if valores_esperados.include? obj
       @resultado=Assert_pasado.new
-      @resultado.descripcion='El resultado fue el esperado: '+obj.to_s+' es uno de '+valores_esperados.to_s
+      @resultado.descripcion='El resultado fue el esperado: '+obj.to_s+' es uno de estos valores '+valores_esperados.to_s
       Gestionador_resultados.instance.agregar_assert @resultado
     else
       @resultado=Assert_fallado.new
-      @resultado.descripcion= 'Se esperaba un valor de '+valores_esperados.to_s+' pero se obtuvo '+obj.to_s
+      @resultado.descripcion= 'Se esperaba uno de estos valores: '+valores_esperados.to_s+' pero se obtuvo '+obj.to_s
       Gestionador_resultados.instance.agregar_assert @resultado
     end
   end
