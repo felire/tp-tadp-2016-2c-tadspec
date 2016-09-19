@@ -8,7 +8,7 @@ class Object  # Agrego metodos a object para testear
     cuerpo = self.instance_method(nombreMetodo)
     TADsPec.agregar_mock self, nombreMetodo, cuerpo
     self.send(:define_method, nombreMetodo) do |*args|
-      self.instance_exec(args, &bloque)
+      self.instance_exec(*args, &bloque)
     end
   end
 
