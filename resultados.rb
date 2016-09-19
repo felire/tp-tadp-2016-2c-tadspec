@@ -139,23 +139,23 @@ end
 
 
 class Ser
-  attr_accessor :valorEsperado
+  attr_accessor :valor_esperado
 
   def initialize val
-    @valorEsperado= val
+    self.valor_esperado= val
   end
 
   def match obj
-    if valorEsperado.respond_to? :match
-      resultado = valorEsperado.match obj #El matcher imprime la descripcion
+    if valor_esperado.respond_to? :match
+      resultado = valor_esperado.match obj #El matcher imprime la descripcion
     else
-      if obj == valorEsperado
+      if obj == valor_esperado
         @resultado=Assert_pasado.new
-        @resultado.descripcion='El resultado fue el esperado: ' + valorEsperado.to_s+ ' es '+ obj.to_s
+        @resultado.descripcion='El resultado fue el esperado: ' + valor_esperado.to_s+ ' es '+ obj.to_s
         Gestionador_resultados.instance.agregar_assert @resultado
       else
         @resultado=Assert_fallado.new
-        @resultado.descripcion= 'Se esperaba '+valorEsperado.to_s+' pero se obtuvo '+obj.to_s
+        @resultado.descripcion= 'Se esperaba '+valor_esperado.to_s+' pero se obtuvo '+obj.to_s
         Gestionador_resultados.instance.agregar_assert @resultado
       end
     end
@@ -163,60 +163,60 @@ class Ser
 end
 
 class Mayor_a
-  attr_accessor :valorEsperado
+  attr_accessor :valor_esperado
 
   def initialize valor
-    @valorEsperado= valor
+    self.valor_esperado= valor
   end
 
   def match obj
-    if obj > valorEsperado
+    if obj > valor_esperado
       @resultado=Assert_pasado.new
-      @resultado.descripcion='El resultado fue el esperado: '+obj.to_s+' es mayor a '+ valorEsperado.to_s
+      @resultado.descripcion='El resultado fue el esperado: '+obj.to_s+' es mayor a '+ valor_esperado.to_s
       Gestionador_resultados.instance.agregar_assert @resultado
     else
       @resultado=Assert_fallado.new
-      @resultado.descripcion= 'Se esperaba un valor mayor a '+valorEsperado.to_s+' pero se obtuvo '+obj.to_s
+      @resultado.descripcion= 'Se esperaba un valor mayor a '+valor_esperado.to_s+' pero se obtuvo '+obj.to_s
       Gestionador_resultados.instance.agregar_assert @resultado
     end
   end
 end
 
 class Menor_a
-  attr_accessor :valorEsperado
+  attr_accessor :valor_esperado
 
   def initialize valor
-    @valorEsperado= valor
+    self.valor_esperado= valor
   end
 
   def match obj
-    if obj < valorEsperado
+    if obj < valor_esperado
       @resultado=Assert_pasado.new
-      @resultado.descripcion='El resultado fue el esperado: '+obj.to_s+' es menor a '+ valorEsperado.to_s
+      @resultado.descripcion='El resultado fue el esperado: '+obj.to_s+' es menor a '+ valor_esperado.to_s
       Gestionador_resultados.instance.agregar_assert @resultado
     else
       @resultado=Assert_fallado.new
-      @resultado.descripcion= 'Se esperaba un valor menor a '+valorEsperado.to_s+' pero se obtuvo '+obj.to_s
+      @resultado.descripcion= 'Se esperaba un valor menor a '+valor_esperado.to_s+' pero se obtuvo '+obj.to_s
       Gestionador_resultados.instance.agregar_assert @resultado
     end
   end
 end
 
 class Uno_de_estos
-  attr_accessor :valoresEsperados
+  attr_accessor :valores_esperados
 
   def initialize val
-    @valoresEsperados= val
+    self.valores_esperados= val
   end
 
   def match obj
-    if valoresEsperados.include? obj
+    if valores_esperados.include? obj
       @resultado=Assert_pasado.new
-      @resultado.descripcion='El resultado fue el esperado: '+obj.to_s+' es uno de '+valoresEsperados.to_s
+      @resultado.descripcion='El resultado fue el esperado: '+obj.to_s+' es uno de '+valores_esperados.to_s
       Gestionador_resultados.instance.agregar_assert @resultado
     else
       @resultado=Assert_fallado.new
-      @resultado.descripcion= 'Se esperaba un valor de '+valoresEsperados.to_s+' pero se obtuvo '+obj.to_s
+      @resultado.descripcion= 'Se esperaba un valor de '+valores_esperados.to_s+' pero se obtuvo '+obj.to_s
       Gestionador_resultados.instance.agregar_assert @resultado
     end
   end
@@ -226,7 +226,7 @@ class Ser_
   attr_accessor :metodo
 
   def initialize met
-    @metodo= met
+    self.metodo= met
   end
 
   def match obj
@@ -246,8 +246,8 @@ class Tener_
   attr_accessor :atributo, :matcher
 
   def initialize atributo, matcher
-    @atributo= atributo
-    @matcher= matcher
+    self.atributo= atributo
+    self.matcher= matcher
   end
 
   def match obj
@@ -260,7 +260,7 @@ class Entender
   attr_accessor :mensaje
 
   def initialize mensaje
-    @mensaje= mensaje
+    self.mensaje= mensaje
   end
 
   def match obj
@@ -280,7 +280,7 @@ class Explotar_con
   attr_accessor :excepcion
 
   def initialize excepcion
-    @excepcion = excepcion
+    self.excepcion = excepcion
   end
 
   def match obj
@@ -303,53 +303,54 @@ class Explotar_con
 end
 
 class Haber_recibido
+  attr_accessor :metodo, :cant_llamadas, :parametros
 
   def initialize metodo
-    @metodo = metodo
-    @cant_llamadas = nil
-    @parametros = nil
+    self.metodo = metodo
+    self.cant_llamadas = nil
+    self.parametros = nil
   end
 
   def con_argumentos *parametros
-    @parametros = *parametros
+    self.parametros = *parametros
     return self
   end
 
   def veces cantidad
-    @cant_llamadas = cantidad
+    self.cant_llamadas = cantidad
     return self
   end
 
   def match objeto
-    @metodos_llamados = TADsPec.obtener_metodos_espiados objeto
-    if(@cant_llamadas != nil)
-      llamadas_reales = (@metodos_llamados.select{|m| (m.metodo == @metodo) }).size
-      if(@cant_llamadas == (llamadas_reales))
+    metodos_llamados = TADsPec.obtener_metodos_espiados objeto
+    if(cant_llamadas != nil)
+      llamadas_reales = (metodos_llamados.select{|m| (m.metodo == self.metodo) }).size
+      if(cant_llamadas == (llamadas_reales))
         resultado = Assert_pasado.new
         Gestionador_resultados.instance.agregar_assert resultado
       else
         resultado = Assert_fallado.new
-        resultado.descripcion = 'Se esperaba que el metodo :'+@metodo.to_s+' se haya llamado '+@cant_llamadas.to_s+' pero se llamo '+llamadas_reales.to_s+' veces'
+        resultado.descripcion = 'Se esperaba que el metodo :'+metodo.to_s+' se haya llamado '+cant_llamadas.to_s+' pero se llamo '+llamadas_reales.to_s+' veces'
         Gestionador_resultados.instance.agregar_assert resultado
       end
-    elsif(@parametros != nil)
-      metodosRepetidos = @metodos_llamados.select {|m| (m.metodo == @metodo)}
-      if(metodosRepetidos.any?{|m| (m.parametros == @parametros) })
+    elsif(parametros != nil)
+      metodosRepetidos = metodos_llamados.select {|m| (m.metodo == metodo)}
+      if(metodosRepetidos.any?{|m| (m.parametros == parametros) })
         resultado = Assert_pasado.new
         Gestionador_resultados.instance.agregar_assert resultado
       else
         resultado = Assert_fallado.new
-        resultado.descripcion = 'Se esperaba que el metodo :'+@metodo.to_s+' se haya llamado con estos argumentos '+@parametros.to_s+' pero se llamo con estos: '+"\n"
+        resultado.descripcion = 'Se esperaba que el metodo :'+metodo.to_s+' se haya llamado con estos argumentos '+parametros.to_s+' pero se llamo con estos: '+"\n"
         metodosRepetidos.each {|metodo| resultado.descripcion = resultado.descripcion+ metodo.parametros.to_s + "\n"}
         Gestionador_resultados.instance.agregar_assert resultado
       end
     else
-      if(@metodos_llamados.any?{|m| m.metodo == @metodo })
+      if(metodos_llamados.any?{|m| m.metodo == metodo })
         resultado = Assert_pasado.new
         Gestionador_resultados.instance.agregar_assert resultado
       else
         resultado = Assert_fallado.new
-        resultado.descripcion = 'Se esperaba que el metodo :' + @metodo.to_s+' fuera llamado por el objeto ' + objeto.class.to_s + ' pero no lo fue.'
+        resultado.descripcion = 'Se esperaba que el metodo :' + metodo.to_s+' fuera llamado por el objeto ' + objeto.class.to_s + ' pero no lo fue.'
         Gestionador_resultados.instance.agregar_assert resultado
       end
     end

@@ -230,4 +230,56 @@ describe 'Metodos de Prueba' do
     expect(TADsPec.testear_metodo instancia, :testear_que_testea_bien).to equal(true)
   end
 
+  it 'Prueba spies' do
+    class Persona
+      def viejo?
+        @edad > 29
+      end
+      def set a
+        @edad = a
+      end
+      def get
+        @edad
+      end
+      def a
+        puts 'chau'
+      end
+      def m var
+        self.a
+        puts var
+      end
+
+      def metodin var1, var2
+        puts var1
+        puts var2
+      end
+    end
+
+    class SpyTest
+      def testear_que_anda
+        persona = Persona.new
+        persona = espiar(persona)
+        persona.m 'holis'
+        persona.m 'holis'
+        persona.metodin 'como', 'va'
+        persona.deberia haber_recibido(:m).veces(2)
+        persona.deberia haber_recibido(:metodin).con_argumentos('como', 'va')
+        persona.deberia haber_recibido(:m)
+      end
+
+      def testear_que_falla
+        persona= Persona.new
+        persona = espiar(persona)
+        persona.m 'holis'
+        persona.m 'holis'
+        persona.deberia haber_recibido(:m).con_argumentos('holis','merlusa')
+        persona.deberia haber_recibido(:s)
+      end
+    end
+
+    instancia = SpyTest.new
+    expect(TADsPec.testear_metodo instancia, :testear_que_anda).to equal(true)
+    expect(TADsPec.testear_metodo instancia, :testar_que_falla).to equal(false)
   end
+
+end
