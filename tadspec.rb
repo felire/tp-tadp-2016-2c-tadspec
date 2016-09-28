@@ -70,6 +70,9 @@ class TADsPec
 
   def self.testear_metodo instancia, metodo
     begin
+      if !instancia.class.__send__ :include?, MensajesTest
+        instancia.class.__send__ :include, MensajesTest
+      end
       instancia.send(metodo)
       TADsPec.borrar_mocks
       @@metodos_espiados = []
@@ -89,13 +92,14 @@ class TADsPec
 
   def self.testear *args
     if(args[0] == nil)
-      TADsPec.obtener_lista_suites.each {|suit| TADsPec.ejecutar_test_suite suit}
+      TADsPec.obtener_lista_suites.each {|suit|
+        TADsPec.ejecutar_test_suite suit}
     elsif((TADsPec.is_suite? args[0]) && args[1] == nil)
       self.ejecutar_test_suite args[0]
     elsif((TADsPec.is_suite? args[0]) && args[1] != nil)
       metodos = TADsPec.transformar_metodos_testear args[1..-1]
       metodos.each{|metodo|
-        instancia = args[0].new
+       instancia = args[0].new
         TADsPec.testear_metodo instancia, metodo}
     end
     Gestionador_resultados.instance.mostrar_resultados

@@ -12,6 +12,47 @@ class Object  # Agrego metodos a object para testear
     end
   end
 
+
+  def espiar objeto
+    objeto.methods().each{ |metodo|
+      if (metodo.to_s == "method") || (metodo.to_s == "define_singleton_method") || (metodo.to_s == "__send__")
+      # no redefinimos estos metodos porque los usamos mas abajo y rompen
+      else
+        metodo_anterior = objeto.method(metodo)
+        objeto.__send__(:define_singleton_method, metodo) do |*args|
+          TADsPec.agregar_metodo_espiado self, metodo, args
+          metodo_anterior.call(*args)
+        end
+      end
+    }
+    return objeto
+  end
+
+
+end
+
+module MensajesTest
+  def haber_recibido metodo
+    Haber_recibido.new metodo
+  end
+
+  def method_missing symbol,*args
+    if(symbol.to_s.start_with? 'ser_')
+      metodo = symbol.to_s[4..-1] +'?'
+      return Ser_.new metodo
+    end
+    if(symbol.to_s.start_with? 'tener_')
+      atributo = '@' + symbol.to_s[6..-1]
+      if args[0].respond_to? :match
+        matcher = args[0]
+      else
+        matcher = Ser.new args[0]
+      end
+      return Tener_.new atributo, matcher
+    end
+    super(symbol, *args)
+  end
+
   def mayor_a valor
     Mayor_a.new valor
   end
@@ -34,41 +75,5 @@ class Object  # Agrego metodos a object para testear
 
   def explotar_con excepcion
     Explotar_con.new excepcion
-  end
-
-  def espiar objeto
-    objeto.methods().each{ |metodo|
-      if (metodo.to_s == "method") || (metodo.to_s == "define_singleton_method") || (metodo.to_s == "__send__")
-      # no redefinimos estos metodos porque los usamos mas abajo y rompen
-      else
-        metodo_anterior = objeto.method(metodo)
-        objeto.__send__(:define_singleton_method, metodo) do |*args|
-          TADsPec.agregar_metodo_espiado self, metodo, args
-          metodo_anterior.call(*args)
-        end
-      end
-    }
-    return objeto
-  end
-
-  def haber_recibido metodo
-    Haber_recibido.new metodo
-  end
-
-  def method_missing symbol,*args
-    if(symbol.to_s.start_with? 'ser_')
-      metodo = symbol.to_s[4..-1] +'?'
-      return Ser_.new metodo
-    end
-    if(symbol.to_s.start_with? 'tener_')
-      atributo = '@' + symbol.to_s[6..-1]
-      if args[0].respond_to? :match
-        matcher = args[0]
-      else
-        matcher = Ser.new args[0]
-      end
-      return Tener_.new atributo, matcher
-    end
-    super(symbol, *args)
   end
 end
