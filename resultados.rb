@@ -100,6 +100,7 @@ class Gestionador_resultados
 
   def test_explotado metodo,excepcion
     @test_explotado=Resultado_test_explotado.new metodo,excepcion
+    self.asserts_test =[]
     self.tests= self.tests + [@test_explotado]
     return @test_explotado.paso?
   end
